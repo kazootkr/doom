@@ -64,6 +64,38 @@
   ;; 係数は org テーブルの罫線が縦にそろうまで macOS 実機で調整する。
   (add-to-list 'face-font-rescale-alist '(".*Hiragino.*" . 1.0)))
 
+;; req-4.1〜4.4 (docs/requirements/req-4_ns-inline-patch.org)
+;; ns-inline-patch（NS port の IME 連携パッチ）適用ビルド向けの IME 制御。
+;; mac-* 関数はパッチ適用ビルドのみが提供するため、未適用ビルド・対象外環境（Linux/docker）では
+;; fboundp ガードでブロックごと no-op になる。
+(when (and (eq system-type 'darwin) (featurep 'ns)
+           (fboundp 'mac-input-method-mode))
+  ;; req-4.1: 既定入力ソースを macOS 標準の日本語 IME (Kotoeri) にし、IME 連携を有効化する。
+  ;; 基底は英数（IME オフ）。入力ソース ID は macOS バージョンで変わりうるので、実機の
+  ;; (mac-ime-input-source-list) で確認し、異なればこの 1 か所を合わせる。
+  (when (fboundp 'mac-get-current-input-source)
+    (custom-set-variables
+     '(mac-default-input-source "com.apple.inputmethod.Kotoeri.RomajiTyping.Japanese")))
+  (unless noninteractive
+    (mac-input-method-mode 1))
+
+  ;; req-4.2: evil ノーマルステートに入ったら IME を自動オフにする（コマンドキーの誤爆防止）。
+  (add-hook 'evil-normal-state-entry-hook #'mac-ime-deactivate)
+
+  ;; req-4.4: これらのコマンドに伴う minibuffer 入力では IME を自動オフにしない（日本語入力を許可）。
+  ;; isearch 系は minibuffer-setup-hook を経由しないため列挙せず、「オフのフックを足さない」ことで
+  ;; 日本語入力可のままにする。
+  (defvar +ime-minibuffer-japanese-commands
+    '(+default/search-project org-tags-view org-capture org-ctrl-c-ctrl-c)
+    "minibuffer 入力で IME を自動オフにしないコマンド。")
+
+  ;; req-4.3: minibuffer 読み取り開始時、例外コマンド以外では IME をオフにする（「M-x あ」対策）。
+  (defun +ime/minibuffer-setup ()
+    "例外コマンド以外の minibuffer 読み取りで IME をオフにする。"
+    (unless (memq this-command +ime-minibuffer-japanese-commands)
+      (mac-ime-deactivate)))
+  (add-hook 'minibuffer-setup-hook #'+ime/minibuffer-setup))
+
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type t)
@@ -153,3 +185,10 @@
           ("s" "Scheduled Todo" entry
            (file+headline ,(concat my-dev-notes-dir "Reminder.org") "■ Scheduled Todo")
            "* TODO %? # SCHEDULED: %^t"))))
+
+;; req-4.5 (docs/requirements/req-4_ns-inline-patch.org)
+;; doom の :ui vc-gutter は Emacs 30 系で diff-hl-update-async を 'thread にする。macOS NS port +
+;; Emacs 30 + スレッド非同期更新で diff-hl がフリーズする (dgutov/diff-hl#230) ため、非同期更新を
+;; 無効化する。doom が diff-hl の :config で設定するため after! で上書きする（fringe 表示は維持）。
+(after! diff-hl
+  (setq diff-hl-update-async nil))

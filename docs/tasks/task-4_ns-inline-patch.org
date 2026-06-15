@@ -142,11 +142,11 @@ req-4.1〜4.4 の最終的なブロックは次の 1 つにまとめる（各見
 
 * 完了条件
 
-- [ ] =config.el= が構文エラーなくロードできる（=./docker/run.sh batch= の =check-parens= / ロード）
-- [ ] 対象外環境（docker/Linux、=ns-inline-patch= 未適用）で IME ブロックが =fboundp= ガードにより
+- [X] =config.el= が構文エラーなくロードできる（=./docker/run.sh batch= の =check-parens= / ロード）
+- [X] 対象外環境（docker/Linux、=ns-inline-patch= 未適用）で IME ブロックが =fboundp= ガードにより
   no-op となり、設定ロードがエラーにならない（=./docker/run.sh batch=）。=+ime-minibuffer-japanese-commands= /
   =+ime/minibuffer-setup= が docker では未定義（=void=）であることも確認（ブロック未評価の裏取り）
-- [ ] docker batch で =diff-hl= をロード（=require=）後、=diff-hl-update-async= が =nil= になっている
+- [X] docker batch で =diff-hl= をロード（=require=）後、=diff-hl-update-async= が =nil= になっている
   （req-4.5 の上書きが doom 既定の =thread= に勝っている）
 - [ ] macOS の GUI Emacs を再起動し、以下をユーザーが確認する
   - [ ] =mac-input-method-mode= が有効で、=mac-default-input-source= が macOS 標準の日本語 IME を指す。
