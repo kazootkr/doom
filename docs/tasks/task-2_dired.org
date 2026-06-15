@@ -32,7 +32,7 @@ doom の =:config= に上書きされてしまう。要求値を確実に勝た�
 
 実装対象は =config.el= と =init.el=。
 
-** TODO [#A] req-2.1 dired の基本挙動の変数を =after! dired= で設定する
+** DONE [#A] req-2.1 dired の基本挙動の変数を =after! dired= で設定する
 
 =config.el= に以下の =after!= ブロックを追加する。doom の dired モジュール設定（=:config= の
 =dired-listing-switches= 上書き含む）の後に適用され、要求値が確実に勝つ。=setq= は冪等なので
@@ -49,7 +49,7 @@ doom の =:config= に上書きされてしまう。要求値を確実に勝た�
   (setq dired-listing-switches "-AFlh"))
 #+end_src
 
-** TODO [#A] req-2.2 dired モジュールに =+dirvish +icons= を有効化する
+** DONE [#A] req-2.2 dired モジュールに =+dirvish +icons= を有効化する
 
 =init.el= の =dired= 行を =(dired +dirvish +icons)= に変更する（=doom sync= 必要）。
 既に =(dired +dirvish +icons)= なら変更しない。
@@ -59,14 +59,14 @@ doom の =:config= に上書きされてしまう。要求値を確実に勝た�
 
 * 完了条件
 
-- [ ] =config.el= が構文エラーなくロードできる（=./docker/run.sh batch= の =check-parens= / ロード）
-- [ ] docker batch で =dired= をロードした後、4 変数が要求値になっている
+- [X] =config.el= が構文エラーなくロードできる（=./docker/run.sh batch= の =check-parens= / ロード）
+- [X] docker batch で =dired= をロードした後、4 変数が要求値になっている
   （=dired-dwim-target= = =t= / =dired-recursive-copies= = =always= /
   =dired-isearch-filenames= = =t= / =dired-listing-switches= = =-AFlh=。
   特に =dired-listing-switches= が doom 既定に上書きされず =-AFlh= であること）
-- [ ] =init.el= で =(dired +dirvish +icons)= が有効化され、=doom sync= がエラーなく完了し
+- [X] =init.el= で =(dired +dirvish +icons)= が有効化され、=doom sync= がエラーなく完了し
   dirvish / nerd-icons 系パッケージが導入される（=./docker/run.sh batch=）
-- [ ] macOS の GUI Emacs を再起動し、以下をユーザーが確認する
-  - [ ] dired バッファでファイル種別アイコンが表示される
-  - [ ] Dirvish の UI（プレビュー等）が動作する
-  - [ ] dired の既存操作（コピー/移動/isearch/一覧表示）が退行しない
+- [X] macOS の GUI Emacs を再起動し、以下をユーザーが確認する
+  - [X] dired バッファでファイル種別アイコンが表示される
+  - [X] Dirvish の UI（プレビュー等）が動作する
+  - [X] dired の既存操作（コピー/移動/isearch/一覧表示）が退行しない

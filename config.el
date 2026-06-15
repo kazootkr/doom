@@ -103,3 +103,12 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
+
+;; req-2.1 (docs/requirements/req-2_dired.org)
+;; dired は遅延ロードされ、doom の :config が dired-listing-switches を上書きするため、
+;; after! でモジュール設定の後に適用して要求値を確実に効かせる。
+(after! dired
+  (setq dired-dwim-target t)
+  (setq dired-recursive-copies 'always)
+  (setq dired-isearch-filenames t)
+  (setq dired-listing-switches "-AFlh"))
