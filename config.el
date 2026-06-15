@@ -70,7 +70,17 @@
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/org/")
+;; req-3.1 (docs/requirements/req-3_org-notes.org)
+;; メモ・日誌・ToDo を置くノート用ルートディレクトリ。journal の保存先・capture の出力先・
+;; agenda の対象は、すべてこの 1 つの定義を参照する。実環境に合わせてここを変える。
+;; 末尾の "/" は capture の (concat my-dev-notes-dir "Reminder.org") のため必須。
+(defvar my-dev-notes-dir "~/dev-home/notes/"
+  "メモ・日誌・ToDo を置くノート用ルートディレクトリ。")
+
+;; org-directory を notes ルートに合わせる（org ロード前に設定する必要がある）。
+;; これにより :lang (org +journal) は org-journal-dir を {notes}/journal/ に既定設定し、
+;; req-3.2 の保存先（notes/journal/）が自動でそろう。
+(setq org-directory my-dev-notes-dir)
 
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
@@ -112,3 +122,34 @@
   (setq dired-recursive-copies 'always)
   (setq dired-isearch-filenames t)
   (setq dired-listing-switches "-AFlh"))
+
+;; req-3.2 (docs/requirements/req-3_org-notes.org)
+;; org-journal の書式設定。保存先 org-journal-dir は doom (+journal) が org-directory 配下の
+;; "journal/" に設定するため、ここでは書式のみ指定する。
+(after! org-journal
+  (setq org-journal-file-format "org-journal_%Y-%m-%d.org")
+  (setq org-journal-date-prefix "#+TITLE: ")
+  (setq org-journal-date-format "%Y/%m/%d (%a)")
+  (setq org-journal-time-prefix "* TODO ")
+  (setq org-journal-file-header "#+STARTUP: indent\n#+STARTUP: showall\n#+STARTUP: nolineimages\n#+STARTUP: hidestars"))
+
+;; req-3.3 (docs/requirements/req-3_org-notes.org)
+;; タグ検索・agenda・TODO 一覧の対象を notes 配下の org 全体にする。
+;; notes ルートと全サブディレクトリを列挙（各ディレクトリは agenda 構築時に *.org 再走査）。
+;; notes が無い環境では directory-files-recursively がエラーになるためガードして no-op にする。
+(when (file-directory-p my-dev-notes-dir)
+  (setq org-agenda-files
+        (cons (directory-file-name my-dev-notes-dir)
+              (seq-filter #'file-directory-p
+                          (directory-files-recursively my-dev-notes-dir "" t)))))
+
+;; req-3.4 (docs/requirements/req-3_org-notes.org)
+;; org-capture で ToDo を notes/Reminder.org に書き留める。
+(after! org-capture
+  (setq org-capture-templates
+        `(("t" "Todo" entry
+           (file+headline ,(concat my-dev-notes-dir "Reminder.org") "■ ToDo")
+           "* TODO %? [Created by %t]")
+          ("s" "Scheduled Todo" entry
+           (file+headline ,(concat my-dev-notes-dir "Reminder.org") "■ Scheduled Todo")
+           "* TODO %? # SCHEDULED: %^t"))))
