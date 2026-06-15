@@ -34,7 +34,7 @@ macOS 固有要素（JetBrains Mono / Hiragino / anti-aliasing / 表示幅）は
 アンカーに追記する）。=init.el= の各モジュールは対応するコメント行のコメントを外す形で一意に
 有効化する（既に有効なら変更しない）。
 
-** TODO [#A] req-1.4 テーマを =doom-solarized-dark-high-contrast= にする
+** DONE [#A] req-1.4 テーマを =doom-solarized-dark-high-contrast= にする
 
 =config.el= の =(setq doom-theme 'doom-one)= を以下に変更する。
 
@@ -42,7 +42,7 @@ macOS 固有要素（JetBrains Mono / Hiragino / anti-aliasing / 表示幅）は
 (setq doom-theme 'doom-solarized-dark-high-contrast)
 #+end_src
 
-** TODO [#A] req-1.1 主フォントを JetBrains Mono・サイズ 15、行間 1.2 倍、合字を有効化
+** DONE [#A] req-1.1 主フォントを JetBrains Mono・サイズ 15、行間 1.2 倍、合字を有効化
 
 =config.el= のトップレベル（ガード外でよい。未インストール環境ではフォールバックするだけで
 エラーにならない）に以下を置く。
@@ -60,7 +60,7 @@ macOS 固有要素（JetBrains Mono / Hiragino / anti-aliasing / 表示幅）は
 - 前提: JetBrains Mono が OS にインストール済みであること。未インストールなら
   https://www.jetbrains.com/ja-jp/lp/mono/ からの導入をユーザーに促す。
 
-** TODO [#A] req-1.2 macOS で anti-aliasing 表示する
+** DONE [#A] req-1.2 macOS で anti-aliasing 表示する
 
 =config.el= に新設する darwin/NS ガードブロック内に置く。NS port 以外（Linux 等）では
 ブロックごと評価されず no-op になる。
@@ -70,7 +70,7 @@ macOS 固有要素（JetBrains Mono / Hiragino / anti-aliasing / 表示幅）は
   (setq ns-antialias-text t))
 #+end_src
 
-** TODO [#A] req-1.3 日本語を日本語フォントで表示し、全角幅を半角の 2 倍にそろえる
+** DONE [#A] req-1.3 日本語を日本語フォントで表示し、全角幅を半角の 2 倍にそろえる
 
 同じ darwin/NS ガードブロック内に、日本語フォントセットの割り当て・表示幅調整・可変ピッチ
 フォントを追加する。日本語フォントセットは =after-setting-font-hook=（doom がフォント適用後に
@@ -104,7 +104,7 @@ macOS 固有要素（JetBrains Mono / Hiragino / anti-aliasing / 表示幅）は
 
   等幅が必要なコード・org テーブルは =doom-font=（JetBrains Mono）のまま保たれること。
 
-** TODO [#B] req-1.6 appearance 関連の =:ui= モジュールを有効化する
+** DONE [#B] req-1.6 appearance 関連の =:ui= モジュールを有効化する
 
 =init.el= で以下のコメントを外して有効化する（各行のコメントを外すだけの一意な編集。
 =doom sync= 必要）。
@@ -120,7 +120,7 @@ macOS 固有要素（JetBrains Mono / Hiragino / anti-aliasing / 表示幅）は
 生成で時間がかかる。macOS で =void-variable= エラーが出たら unicode-fonts キャッシュを削除して
 再起動する。
 
-** TODO [#C] req-1.5 ピクセル単位のスムーススクロール
+** DONE [#C] req-1.5 ピクセル単位のスムーススクロール
 
 =init.el= の =;;smooth-scroll= 行を =(smooth-scroll +interpolate)= にして有効化する
 （=ultra-scroll= でピクセル平滑、=good-scroll= で PgUp/PgDn・=C-d=/=C-u= の補間。=doom sync= 必要）。
@@ -128,21 +128,21 @@ macOS 固有要素（JetBrains Mono / Hiragino / anti-aliasing / 表示幅）は
 
 * 完了条件
 
-- [ ] =config.el= が構文エラーなくロードできる（=./docker/run.sh batch= の =check-parens= / ロード）
-- [ ] =doom-theme= が =doom-solarized-dark-high-contrast= になっている（docker batch で適用確認）
-- [ ] =init.el= で =ligatures= / =unicode= / =indent-guides= / =nav-flash= / =(emoji +unicode)= /
+- [X] =config.el= が構文エラーなくロードできる（=./docker/run.sh batch= の =check-parens= / ロード）
+- [X] =doom-theme= が =doom-solarized-dark-high-contrast= になっている（docker batch で適用確認）
+- [X] =init.el= で =ligatures= / =unicode= / =indent-guides= / =nav-flash= / =(emoji +unicode)= /
   =(smooth-scroll +interpolate)= が有効化され、=doom sync= がエラーなく完了する（=./docker/run.sh batch=）
-- [ ] 対象外環境（Linux / docker）で darwin/NS ガード内の macOS 固有設定が no-op となり、エラーにならない
-- [ ] macOS の GUI Emacs を再起動し、以下をユーザーが確認する
-  - [ ] =doom-font= が JetBrains Mono・サイズ 15 で表示される（=M-x describe-font= または目視）
-  - [ ] 行間が既定より広く、行の高さが約 1.2 倍になっている
-  - [ ] JetBrains Mono の合字（=->= / =>== 等）が表示される
-  - [ ] 文字が anti-aliasing 表示される
-  - [ ] 日本語（ひらがな・カタカナ・漢字）が日本語フォント（Hiragino 等）で表示され、豆腐・中華フォントが出ない
-  - [ ] 全角日本語と半角英数の表示幅がそろい、org テーブルの桁ズレが出ない
-  - [ ] org / markdown の地の文が可変ピッチフォントで読みやすく表示され、日本語も崩れない
-  - [ ] =unicode= 有効化後も日本語が日本語フォントで表示され、中華フォント化・豆腐化しない（req-1.3 の退行なし）
-  - [ ] インデントガイドが表示される
-  - [ ] 大きな移動の後にカーソル行が点滅する
-  - [ ] 絵文字が描画される
-  - [ ] スムーススクロール（PgUp/PgDn・=C-d= / =C-u= の補間を含む）が効く
+- [X] 対象外環境（Linux / docker）で darwin/NS ガード内の macOS 固有設定が no-op となり、エラーにならない
+- [X] macOS の GUI Emacs を再起動し、以下をユーザーが確認する
+  - [X] =doom-font= が JetBrains Mono・サイズ 15 で表示される（=M-x describe-font= または目視）
+  - [X] 行間が既定より広く、行の高さが約 1.2 倍になっている
+  - [X] JetBrains Mono の合字（=->= / =>== 等）が表示される
+  - [X] 文字が anti-aliasing 表示される
+  - [X] 日本語（ひらがな・カタカナ・漢字）が日本語フォント（Hiragino 等）で表示され、豆腐・中華フォントが出ない
+  - [X] 全角日本語と半角英数の表示幅がそろい、org テーブルの桁ズレが出ない
+  - [X] org / markdown の地の文が可変ピッチフォントで読みやすく表示され、日本語も崩れない
+  - [X] =unicode= 有効化後も日本語が日本語フォントで表示され、中華フォント化・豆腐化しない（req-1.3 の退行なし）
+  - [X] インデントガイドが表示される
+  - [X] 大きな移動の後にカーソル行が点滅する
+  - [X] 絵文字が描画される☀️
+  - [X] スムーススクロール（PgUp/PgDn・=C-d= / =C-u= の補間を含む）が効く

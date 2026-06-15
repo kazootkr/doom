@@ -32,7 +32,37 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-one)
+;; req-1.4 (docs/requirements/req-1_appearance.org)
+(setq doom-theme 'doom-solarized-dark-high-contrast)
+
+;; req-1.1: 主フォントは JetBrains Mono・サイズ 15、行の高さを約 1.2 倍にする
+(setq doom-font (font-spec :family "JetBrains Mono" :size 15))
+(setq-default line-spacing 0.2)
+
+;; req-1.3: 地の文の可変ピッチフォント。日本語が崩れないよう Hiragino を使う
+(setq doom-variable-pitch-font (font-spec :family "Hiragino Kaku Gothic ProN" :size 15))
+
+;; macOS（NS port）固有の外観設定。Linux など対象外環境ではブロックごと no-op。
+(when (and (eq system-type 'darwin) (featurep 'ns))
+  ;; req-1.2: 文字を anti-aliasing 表示する
+  (setq ns-antialias-text t)
+
+  ;; req-1.3: default フォントセットに Hiragino 系の日本語フォントを割り当てる。
+  ;; after-setting-font-hook の後段で再適用することで、:ui unicode (unicode-fonts)
+  ;; による上書きに勝ち、日本語の中華フォント化・豆腐化を防ぐ。
+  (defun +appearance/set-japanese-font ()
+    "default フォントセットに Hiragino 系の日本語フォントを割り当てる。"
+    (dolist (charset '(japanese-jisx0208 katakana-jisx0201 cp932))
+      (set-fontset-font t charset (font-spec :family "Hiragino Sans")))
+    ;; かな・約物（U+3000–30FF）と漢字（U+4E00–9FFF）
+    (set-fontset-font t '(#x3000 . #x30ff) (font-spec :family "Hiragino Sans"))
+    (set-fontset-font t '(#x4e00 . #x9fff) (font-spec :family "Hiragino Sans")))
+  (add-hook 'after-setting-font-hook #'+appearance/set-japanese-font)
+  (+appearance/set-japanese-font)
+
+  ;; req-1.3: 全角日本語の表示幅を半角英数の整数倍（2 倍）にそろえる。
+  ;; 係数は org テーブルの罫線が縦にそろうまで macOS 実機で調整する。
+  (add-to-list 'face-font-rescale-alist '(".*Hiragino.*" . 1.0)))
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
