@@ -1,0 +1,37 @@
+#+title: README
+#+STARTUP: indent
+#+STARTUP: showall
+#+STARTUP: nolineimages
+#+STARTUP: hidestars
+
+これはdoomemacs用の個人設定ファイルです。
+
+- doomemacs: https://github.com/doomemacs/core
+
+* 利用環境
+
+- macOS 26(Apple Silicon)
+- GNU Emacs 30.2（NS port, ns-inline-patch 適用済み）
+  - 主要ビルドフィーチャー: TREE_SITTER / SQLITE3 / MODULES / GNUTLS / LIBXML2
+- Doom Emacs
+
+
+* 設定(コード)変更プロセス
+
+spec駆動開発を採用しています。
+下記のスキルを使って3ステップで行います。
+
+1. =/create-requirement= — プロンプト → 要求（docs/requirements/）
+2. =/create-task= — 要求 → タスク（docs/tasks/）
+3. =/sync-implementation= — タスク → 実装・検証（完了条件のチェック更新まで）
+
+** コミット運用
+
+1ステップ毎にコミットする運用とします。
+
+1. 要求の作成 → コミット
+2. タスク化 → コミット
+3. 実装 → コミット
+
+コミットは =/git-commit= スキルで行います。差分ファイルすべてを対象に、
+Conventional Commits 形式の subject 1行（本文・フッターなし）でコミットします。

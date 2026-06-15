@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(find * -exec:*)"
+    ],
+      "allow": [
+      "Read(~/.config/emacs/**)",
+      "Bash(find */.config/emacs)",
+      "Edit(/**)",
+      "Bash(/docker/run.sh:*)"
+    ]
+  }
+}

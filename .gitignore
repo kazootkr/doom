@@ -1,0 +1,6 @@
+# doom/.gitignore
+
+.DS_Store
+*.elc
+
+docker/out/
