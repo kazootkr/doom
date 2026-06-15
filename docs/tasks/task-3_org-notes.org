@@ -1,0 +1,147 @@
+#+title: task-3_org-notes
+#+STARTUP: indent
+#+STARTUP: showall
+#+STARTUP: nolineimages
+#+STARTUP: hidestars
+
+* どの要求に基づくタスクか
+
+- [[file:../requirements/req-3_org-notes.org][req-3 org-notes]]
+
+* 背景
+
+org-mode で日誌・メモ・ToDo を 1 つのノート用ディレクトリ（=notes=）配下にまとめて記録・管理する
+（[[file:../requirements/req-3_org-notes.org][req-3]]）。
+
+採用方針（doom-first・単一の真実源）:
+
+- ノート用ルートを =my-dev-notes-dir= 1 か所で定義し、=org-directory= をそれに合わせる。
+- doom の =:lang (org +journal)= は =org-journal-dir= を =org-directory= 配下の =journal/= に
+  既定設定する（[[file:../../../emacs/sources/doom+/modules/lang/org/contrib/journal.el][doom journal.el]] の =:config= で
+  =(setq org-journal-dir (expand-file-name org-journal-dir org-directory))=）。よって
+  =org-directory= = =my-dev-notes-dir= とするだけで、日誌は =notes/journal/= に保存される
+  （req-3.2 の保存先が doom 既定でそろう。=org-journal-dir= を自前で書く必要はない）。
+- =org-journal= は =packages.el= 追加不要。=init.el= の =org= → =(org +journal)= フラグ追加と
+  =doom sync= だけで導入される。
+- agenda/タグ検索/TODO 一覧の対象は、doom 既定（=(list org-directory)= = 非再帰）では =notes=
+  配下を横断できないため、=notes= 配下のディレクトリを =org-agenda-files= に明示列挙する。
+
+現状（[[file:../../config.el][config.el]]）: =org-directory= は =~/org/=(73 行)。=org-journal= / =org-capture= /
+=org-agenda-files= の設定は無い。=init.el= の =:lang= は =org=（フラグなし、161 行）。
+
+注意: =notes= の実パスはユーザー指定が無いため既定値 =~/notes/= を置く。実環境に合わせて
+=my-dev-notes-dir= の 1 か所を変えれば全設定が追従する。docker/Linux にはこのパスが無いので、
+agenda 設定はパス存在をガードして対象外環境で no-op にする。
+
+* やること
+
+実装は 2 ファイルにまたがる:
+
+- =config.el=（=doom sync= 不要）— req-3.1 のルート定義と =org-directory= 差し替え、
+  req-3.2/3.3/3.4 の org-journal・agenda・capture 設定。
+- =init.el=（=doom sync= 必要）— req-3.2 の =+journal= フラグ追加。
+
+** TODO [#A] req-3.1 ノート用ルートを定義し =org-directory= を合わせる
+
+=config.el= の既存 =(setq org-directory "~/org/")=（73 行、コメント 71–72 行の直後）を、以下に
+置き換える。=my-dev-notes-dir= はキャプチャテンプレート等から参照される単一の真実源。末尾の
+=/= は =(concat my-dev-notes-dir "Reminder.org")= が成立するために必須。=defvar= / =setq= は
+冪等。
+
+#+begin_src emacs-lisp
+;; req-3.1 (docs/requirements/req-3_org-notes.org)
+;; メモ・日誌・ToDo を置くノート用ルートディレクトリ。journal の保存先・capture の出力先・
+;; agenda の対象は、すべてこの 1 つの定義を参照する。実環境に合わせてここを変える。
+;; 末尾の "/" は capture の (concat my-dev-notes-dir "Reminder.org") のため必須。
+(defvar my-dev-notes-dir "~/notes/"
+  "メモ・日誌・ToDo を置くノート用ルートディレクトリ。")
+
+;; org-directory を notes ルートに合わせる（org ロード前に設定する必要がある）。
+;; これにより :lang (org +journal) は org-journal-dir を {notes}/journal/ に既定設定し、
+;; req-3.2 の保存先（notes/journal/）が自動でそろう。
+(setq org-directory my-dev-notes-dir)
+#+end_src
+
+** TODO [#A] req-3.2 =(org +journal)= を有効化し org-journal の書式を設定する
+
+1. =init.el= の =:lang= の =org= 行（161 行）を =(org +journal)= に変更する（=doom sync= 必要）。
+   既に =(org +journal)= なら変更しない。
+   - 変更前: =       org               ; organize your plain life in plain text=
+   - 変更後: =       (org +journal)    ; organize your plain life in plain text=
+
+2. =config.el= に org-journal の書式設定を追加する（末尾の dired =after!= ブロックの後）。
+   org-journal は遅延ロードされ doom の =:config= が走るため、=after!= でその後に適用して要求値を
+   勝たせる。=setq= は冪等。保存先 =org-journal-dir= は doom が =org-directory=（= =my-dev-notes-dir=）
+   配下の =journal/= に設定するため、ここでは書式のみ指定する。
+
+#+begin_src emacs-lisp
+;; req-3.2 (docs/requirements/req-3_org-notes.org)
+;; org-journal の書式設定。保存先 org-journal-dir は doom (+journal) が org-directory 配下の
+;; "journal/" に設定するため、ここでは書式のみ指定する。
+(after! org-journal
+  (setq org-journal-file-format "org-journal_%Y-%m-%d.org")
+  (setq org-journal-date-prefix "#+TITLE: ")
+  (setq org-journal-date-format "%Y/%m/%d (%a)")
+  (setq org-journal-time-prefix "* TODO ")
+  (setq org-journal-file-header "#+STARTUP: indent\n#+STARTUP: showall\n#+STARTUP: nolineimages\n#+STARTUP: hidestars"))
+#+end_src
+
+** TODO [#B] req-3.3 agenda/タグ検索/TODO 一覧を =notes= 配下の org 全体に向ける
+
+=config.el= に以下を追加する（org-journal ブロックの後）。=notes= ルートと全サブディレクトリを
+=org-agenda-files= に列挙する。各ディレクトリエントリは agenda 構築のたびに =*.org= を再走査する
+ため、新規日誌も自動で含まれる。org ロード前に設定すれば doom 既定（=(list org-directory)=）に
+=unless= で上書きされない。=notes= が無い環境（docker/Linux）では =directory-files-recursively=
+がエラーになるため =file-directory-p= でガードし、その場合は =org-agenda-files= を変更しない
+（no-op）。=setq= は冪等。
+
+#+begin_src emacs-lisp
+;; req-3.3: タグ検索・agenda・TODO 一覧の対象を notes 配下の org 全体にする。
+;; notes ルートと全サブディレクトリを列挙（各ディレクトリは agenda 構築時に *.org 再走査）。
+;; notes が無い環境では directory-files-recursively がエラーになるためガードして no-op にする。
+(when (file-directory-p my-dev-notes-dir)
+  (setq org-agenda-files
+        (cons (directory-file-name my-dev-notes-dir)
+              (seq-filter #'file-directory-p
+                          (directory-files-recursively my-dev-notes-dir "" t)))))
+#+end_src
+
+** TODO [#B] req-3.4 org-capture で ToDo を =notes/Reminder.org= に書き留める
+
+=config.el= に以下を追加する（agenda ブロックの後）。出力先は =my-dev-notes-dir= 配下の
+=Reminder.org=。=after! org-capture= はユーザー指定の確定コードに従う。=setq= は冪等。
+
+#+begin_src emacs-lisp
+;; req-3.4: org-capture で ToDo を notes/Reminder.org に書き留める。
+(after! org-capture
+  (setq org-capture-templates
+        `(("t" "Todo" entry
+           (file+headline ,(concat my-dev-notes-dir "Reminder.org") "■ ToDo")
+           "* TODO %? [Created by %t]")
+          ("s" "Scheduled Todo" entry
+           (file+headline ,(concat my-dev-notes-dir "Reminder.org") "■ Scheduled Todo")
+           "* TODO %? # SCHEDULED: %^t"))))
+#+end_src
+
+* 完了条件
+
+- [ ] =config.el= が構文エラーなくロードできる（=./docker/run.sh batch= の =check-parens= / ロード）
+- [ ] =init.el= で =:lang (org +journal)= が有効化され、=doom sync= がエラーなく完了し =org-journal=
+  が導入される（=./docker/run.sh batch=）
+- [ ] docker batch で =org-journal= をロード（=require=）後、書式変数が要求値になっている
+  （=org-journal-file-format= = =org-journal_%Y-%m-%d.org= / =org-journal-date-prefix= = =#+TITLE: = /
+  =org-journal-date-format= = =%Y/%m/%d (%a)= / =org-journal-time-prefix= = =* TODO = /
+  =org-journal-file-header= が指定の =#+STARTUP:= 群）
+- [ ] docker batch で =org-capture= をロード後、=org-capture-templates= に =t= "Todo" と =s=
+  "Scheduled Todo" が定義され、両者の出力先が =my-dev-notes-dir= 配下の =Reminder.org= になっている
+- [ ] 対象外環境（docker/Linux、=notes= 不在）で =file-directory-p= ガードにより agenda 設定が
+  no-op となり、設定ロードがエラーにならない（=./docker/run.sh batch=）
+- [ ] macOS の GUI Emacs を再起動し、以下をユーザーが確認する
+  - [ ] =my-dev-notes-dir= が実際の notes ルートを指し、=org-directory= が同じ値になっている
+  - [ ] =org-journal-dir= が =notes/journal/= を指し、日誌が =notes/journal/org-journal_<日付>.org= に保存される
+  - [ ] 日誌のファイル先頭が =#+TITLE: %Y/%m/%d (%a)= 形式の見出しと指定の =#+STARTUP:= 群になっている
+  - [ ] タグ検索・agenda・TODO 一覧が =notes= 配下（=journal/= の日誌・=Reminder.org= を含む
+    サブディレクトリ以下すべて）の org ファイルを対象にしている
+  - [ ] =t= / =s= の capture で =Reminder.org= の =■ ToDo= / =■ Scheduled Todo= 見出し配下に
+    ToDo が追記される
+  - [ ] 既存の org 操作・他の設定が退行しない
