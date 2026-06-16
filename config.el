@@ -94,7 +94,18 @@
     "例外コマンド以外の minibuffer 読み取りで IME をオフにする。"
     (unless (memq this-command +ime-minibuffer-japanese-commands)
       (mac-ime-deactivate)))
-  (add-hook 'minibuffer-setup-hook #'+ime/minibuffer-setup))
+  (add-hook 'minibuffer-setup-hook #'+ime/minibuffer-setup)
+
+  ;; fix-1: アプリスイッチ時に IME 状態を他アプリへ引きずらせない（task-4 fix-1）。
+  ;; mac-input-method-mode はフォーカス変化・buffer-list-update に IME 状態を同期し、内部で
+  ;; mac-toggle-input-source（TISSelectInputSource）を呼んでシステム全体の入力ソースを書き換える。
+  ;; Emacs が非フォーカスの間も同期が走り前面アプリの入力ソースを Emacs の状態（英数）に引き戻すため、
+  ;; frame-focus-state が真（Emacs が前面）のときだけ入力ソースを変更する。advice は名前付き関数を
+  ;; シンボル登録して再評価でも二重登録されないようにする。
+  (defun +ime/toggle-input-source-when-focused (orig &rest args)
+    "Emacs フレームがフォーカスを持つときだけ ORIG（mac-toggle-input-source）を実行する。"
+    (when (frame-focus-state) (apply orig args)))
+  (advice-add 'mac-toggle-input-source :around #'+ime/toggle-input-source-when-focused))
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.

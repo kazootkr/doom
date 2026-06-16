@@ -186,9 +186,8 @@ IME 切り替えに干渉しないようにする。
 
 * 完了条件
 
-- [ ] =config.el= が構文エラーなくロードできる（=./docker/run.sh batch= の =check-parens= / ロード）
-  （fix-1 の advice ブロック追加後に再検証）
-- [ ] 対象外環境（docker/Linux、=ns-inline-patch= 未適用）で IME ブロックが =fboundp= ガードにより
+- [X] =config.el= が構文エラーなくロードできる（=./docker/run.sh batch= の =check-parens= / ロード）
+- [X] 対象外環境（docker/Linux、=ns-inline-patch= 未適用）で IME ブロックが =fboundp= ガードにより
   no-op となり、設定ロードがエラーにならない（=./docker/run.sh batch=）。=+ime-minibuffer-japanese-commands= /
   =+ime/minibuffer-setup= / =+ime/toggle-input-source-when-focused= が docker では未定義（=void=）であることも
   確認（ブロック未評価の裏取り。fix-1 の関数も対象に追加）
