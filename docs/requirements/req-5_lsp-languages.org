@@ -1,0 +1,85 @@
+#+title: req-5_lsp-languages
+#+STARTUP: indent
+#+STARTUP: showall
+#+STARTUP: nolineimages
+#+STARTUP: hidestars
+
+* 背景
+
+Ruby/Rails・TypeScript/React・Swift の3スタックを Emacs で開発するため、IDE 相当の
+補完・定義ジャンプ・参照検索・診断を LSP で有効にしたい。現状 =init.el= の =doom!=
+ブロックでは対象言語モジュール（=ruby= / =javascript= / =web= / =swift=）も
+=:tools lsp= / =:tools tree-sitter= もすべて無効で、プログラミング支援が効かない。
+
+doom の =:tools lsp= は Emacs 内の LSP クライアントを用意するもので、言語サーバー本体
+（ruby-lsp / typescript-language-server / sourcekit-lsp 等）は別途インストールが必要。
+インストール済みであればファイルを開いた時点で自動起動し、手動起動は不要。
+
+実行環境は macOS 26（Apple Silicon）/ Emacs 30.2（NS port, TREE_SITTER ビルド）。
+Ruby/Node のバージョン管理は mise を使用しており、doom の =+rbenv= 等のフラグは使わず
+PATH 経由で各言語のランタイム・サーバーを解決する。
+
+* 要求一覧
+
+** req-5.1: LSP クライアント基盤を有効にすること（必須）
+
+- =:tools lsp=（lsp-mode。=+eglot= は使わない）を有効化し、対象言語で補完・定義ジャンプ・
+  参照検索・診断が効くこと。
+- =:tools tree-sitter= を有効化し、各言語の =+tree-sitter= による構文ハイライト・
+  構造編集と、JSX/TSX サポートの前提を満たすこと。
+- =lookup= モジュールは有効なので、定義/参照ルックアップが LSP と連携すること
+  （=+peek= の採否はタスクで判断）。
+
+** req-5.2: Ruby/Rails の LSP 開発支援が効くこと（必須）
+
+- =:lang ruby= を =+rails +lsp +tree-sitter= 付きで有効化し、=.rb= / Rails プロジェクトで
+  補完・定義ジャンプ・診断と Rails ナビゲーション（server/console 連携）が使えること。
+- バージョン管理は mise を前提とし、doom の =+rbenv= / =+rvm= / =+chruby= は付けない。
+
+** req-5.3: TypeScript/React の LSP 開発支援が効くこと（必須）
+
+- =:lang javascript= を =+lsp +tree-sitter= 付きで有効化し、=.ts= / =.tsx= で
+  補完・定義ジャンプ・診断が効くこと。
+- =+tree-sitter= により JSX/TSX の構文ハイライト・構造編集が効くこと。
+
+** req-5.4: Swift の LSP 開発支援が効くこと（必須）
+
+- =:lang swift= を =+lsp +tree-sitter= 付きで有効化し、=.swift= で補完・定義ジャンプ・
+  診断（sourcekit-lsp）が効くこと。
+
+** req-5.5: Web マークアップ言語のサポートが効くこと
+
+- =:lang web= を =+lsp +tree-sitter= 付きで有効化し、HTML/CSS/SCSS 等（React の CSS、
+  Rails の erb/haml/scss）の編集・補完が快適になること。
+
+* タスクへの引き継ぎ
+
+ユーザー確定の方針（タスクで実装する際の前提）:
+
+- LSP クライアントは lsp-mode（=:tools lsp= をフラグ無しで採用。=+eglot= 不可）。
+- Ruby/Node のランタイム・LSP サーバーは mise 管理。GUI Emacs（macOS Finder/Dock 起動）が
+  PATH を継承せず mise 管理下のバイナリを見つけられない問題への対処手段は、タスクで決める
+  （例: =exec-path-from-shell= 系の手当て、mise shims の PATH、起動方法の指定など）。
+- =init.el= 変更後は =doom sync= が必要（ホスト側はユーザーに依頼）。
+
+* 非機能要求・制約
+
+- モジュール選択は =init.el= の =doom!= ブロックで行う（変更時 =doom sync= 必須）。
+  config.el 側の追加設定が要る場合は遅延ロードを考慮し =after!= で行う。
+- 言語サーバー本体（ruby-lsp / typescript-language-server / sourcekit-lsp /
+  vscode-langservers-extracted 等）はインストールが前提。lsp-mode は未導入時に自動
+  インストールを促す。導入手順自体は環境構築であり設定リポジトリの対象外。
+- docker（Linux）での検証範囲: =doom sync= 成功・設定ロード・モジュール有効化までは確認可。
+  macOS 固有の sourcekit-lsp 接続や Hiragino/NS 依存部分は検証不可で、最終確認はユーザー依頼。
+
+受け入れ確認手順:
+
+- [ ] =doom sync= がエラーなく完了する（docker batch）。
+- [ ] =:tools lsp= / =:tools tree-sitter= と =ruby +rails +lsp +tree-sitter= /
+      =javascript +lsp +tree-sitter= / =swift +lsp +tree-sitter= /
+      =web +lsp +tree-sitter= が有効化されている（docker batch で確認）。
+- [ ] Ruby ファイルを開くと ruby-lsp が起動し補完・定義ジャンプが効く（macOS, ユーザー確認）。
+- [ ] =.tsx= ファイルで JSX 補完・定義ジャンプと tree-sitter ハイライトが効く（macOS, ユーザー確認）。
+- [ ] =.swift= ファイルで sourcekit-lsp が起動し補完・診断が効く（macOS, ユーザー確認）。
+- [ ] HTML/CSS/SCSS で補完が効く（macOS, ユーザー確認）。
+- [ ] 既存の外観・dired・org・IME 設定が退行しない（既存 docker チェック）。
