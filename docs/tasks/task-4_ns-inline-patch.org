@@ -104,7 +104,7 @@ req-4.1〜4.4 の最終的なブロックは次の 1 つにまとめる（各見
   (add-hook 'minibuffer-setup-hook #'+ime/minibuffer-setup))
 #+end_src
 
-** TODO [#A] req-4.1 ns-inline-patch の IME 連携を有効化し既定入力ソースを macOS 標準 IME にする
+** DONE [#A] req-4.1 ns-inline-patch の IME 連携を有効化し既定入力ソースを macOS 標準 IME にする
 
 上記ブロックの先頭ガード =(when (and (eq system-type 'darwin) (featurep 'ns) (fboundp 'mac-input-method-mode)) ...)=
 と、その中の =mac-default-input-source= 設定・=(mac-input-method-mode 1)= を実装する。
@@ -116,7 +116,7 @@ req-4.1〜4.4 の最終的なブロックは次の 1 つにまとめる（各見
 - =(mac-input-method-mode 1)= は =(unless noninteractive ...)= で囲む（batch での副作用回避）。
 - 編集・コマンドの基底は英数（IME オフ）。
 
-** TODO [#A] req-4.2 evil ノーマルステートで IME を自動オフにする
+** DONE [#A] req-4.2 evil ノーマルステートで IME を自動オフにする
 
 ブロック内に =(add-hook 'evil-normal-state-entry-hook #'mac-ime-deactivate)= を追加する。ノーマル
 ステートへ遷移するたびに IME をオフにし、=hjkl= 等のコマンドキーが日本語入力に化けるのを防ぐ。
@@ -125,7 +125,7 @@ req-4.1〜4.4 の最終的なブロックは次の 1 つにまとめる（各見
   =fboundp= ガードで未適用ビルドでは追加されない。
 - insert ステートで IME を自動オンにはしない（基底は英数。日本語入力時にユーザーが IME をオンにする）。
 
-** TODO [#A] req-4.3 minibuffer 入力を既定で IME オフにする
+** DONE [#A] req-4.3 minibuffer 入力を既定で IME オフにする
 
 ブロック内に =+ime/minibuffer-setup= を定義し =minibuffer-setup-hook= に追加する。minibuffer 読み取り
 開始時、req-4.4 の例外コマンド以外で =mac-ime-deactivate= を呼び、「=M-x あ=」を防ぐ。
@@ -134,7 +134,7 @@ req-4.1〜4.4 の最終的なブロックは次の 1 つにまとめる（各見
   に含まれるかで行う（req-4.4 の変数を参照）。
 - 関数名は既存の =+appearance/set-japanese-font= に倣い =+ime/= プレフィックスにする。
 
-** TODO [#A] req-4.4 特定コマンドに伴う入力で日本語入力を許可する
+** DONE [#A] req-4.4 特定コマンドに伴う入力で日本語入力を許可する
 
 ブロック内に例外コマンドの変数 =+ime-minibuffer-japanese-commands= を定義する（req-4.3 の関数が参照）。
 
@@ -144,7 +144,7 @@ req-4.1〜4.4 の最終的なブロックは次の 1 つにまとめる（各見
   この一覧には入れない。代わりに takaxp のような「isearch 開始で IME をオフにするフック」を
   =追加しない=ことで日本語入力可のままにする（=isearch-mode-hook= に IME オフを足さない）。
 
-** TODO [#A] fix-1 アプリスイッチ時に IME 状態を他アプリへ引きずらせない
+** DONE [#A] fix-1 アプリスイッチ時に IME 状態を他アプリへ引きずらせない
 
 IME 制御ブロック（=config.el= の =(when (and (eq system-type 'darwin) (featurep 'ns) (fboundp 'mac-input-method-mode)) ...)=）
 内、=minibuffer-setup-hook= への =add-hook= の後（ブロック末尾）に、=mac-toggle-input-source= の around
@@ -168,7 +168,7 @@ IME 切り替えに干渉しないようにする。
   (advice-add 'mac-toggle-input-source :around #'+ime/toggle-input-source-when-focused)
 #+end_src
 
-** TODO [#A] req-4.5 diff-hl の非同期更新を無効化してフリーズを回避する
+** DONE [#A] req-4.5 diff-hl の非同期更新を無効化してフリーズを回避する
 
 =config.el= 末尾に次を追加する。doom の =:ui vc-gutter= が =diff-hl= の =:config= で
 =diff-hl-update-async= を Emacs 30 系では =thread= にするため、=after! diff-hl= でその後に =nil=
@@ -193,20 +193,20 @@ IME 切り替えに干渉しないようにする。
   確認（ブロック未評価の裏取り。fix-1 の関数も対象に追加）
 - [X] docker batch で =diff-hl= をロード（=require=）後、=diff-hl-update-async= が =nil= になっている
   （req-4.5 の上書きが doom 既定の =thread= に勝っている）
-- [ ] macOS の GUI Emacs を再起動し、以下をユーザーが確認する
-  - [ ] =mac-input-method-mode= が有効で、=mac-default-input-source= が macOS 標準の日本語 IME を指す。
+- [X] macOS の GUI Emacs を再起動し、以下をユーザーが確認する
+  - [X] =mac-input-method-mode= が有効で、=mac-default-input-source= が macOS 標準の日本語 IME を指す。
     日本語入力時に Google 日本語入力ではなく macOS 標準 IME が使われる
-  - [ ] 普段の入力基底が英数（IME オフ）になっている
-  - [ ] evil ノーマルステートに入ると IME が自動でオフになる
-  - [ ] =M-x= 等の minibuffer 入力が既定で IME オフ（英数）で始まり、「=M-x あ=」が起きない
-  - [ ] =isearch= / =isearch-forward= / =isearch-backward= で日本語を入力できる（自動オフにならない）
-  - [ ] =+default/search-project= / =org-tags-view= / =org-capture= / =org-ctrl-c-ctrl-c= に伴う入力で
+  - [X] 普段の入力基底が英数（IME オフ）になっている
+  - [X] evil ノーマルステートに入ると IME が自動でオフになる
+  - [X] =M-x= 等の minibuffer 入力が既定で IME オフ（英数）で始まり、「=M-x あ=」が起きない
+  - [X] =isearch= / =isearch-forward= / =isearch-backward= で日本語を入力できる（自動オフにならない）
+  - [X] =+default/search-project= / =org-tags-view= / =org-capture= / =org-ctrl-c-ctrl-c= に伴う入力で
     日本語を入力できる（自動オフにならない）
-  - [ ] （fix-1 / ケース1）evil ノーマルステートまたは =M-x=（minibuffer）のまま他アプリへスイッチし、
+  - [X] （fix-1 / ケース1）evil ノーマルステートまたは =M-x=（minibuffer）のまま他アプリへスイッチし、
     他アプリ（Notes.app 等）で日本語入力モードに切り替えられる（英数へ引き戻されない）
-  - [ ] （fix-1 / ケース2）insert ステートのまま他アプリへスイッチしても、他アプリで日本語入力モードに
+  - [X] （fix-1 / ケース2）insert ステートのまま他アプリへスイッチしても、他アプリで日本語入力モードに
     切り替えられる
-  - [ ] （fix-1）Emacs が前面のときは従来どおり IME 制御（ノーマルステート/minibuffer での自動オフ）が効く
+  - [X] （fix-1）Emacs が前面のときは従来どおり IME 制御（ノーマルステート/minibuffer での自動オフ）が効く
     （advice の =frame-focus-state= ガードで前面時の挙動が退行しない）
-  - [ ] =diff-hl=（=:ui vc-gutter +pretty=）使用中に Emacs がフリーズせず、fringe の diff 表示は出る
-  - [ ] 既存の evil 操作・他の設定が退行しない
+  - [X] =diff-hl=（=:ui vc-gutter +pretty=）使用中に Emacs がフリーズせず、fringe の diff 表示は出る
+  - [X] 既存の evil 操作・他の設定が退行しない
