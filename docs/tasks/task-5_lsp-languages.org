@@ -75,7 +75,7 @@ TypeScript/React は javascript モジュールが担当（TS は js モジュ�
 - =;;web               ; the tubes= → =(web +lsp +tree-sitter) ; the tubes=
 - HTML/CSS/SCSS 等（React の CSS、Rails の erb/haml/scss）。
 
-** TODO [#B] req-5.1 mise 管理下バイナリを GUI Emacs に見せる（doom env）
+** DONE [#B] req-5.1 mise 管理下バイナリを GUI Emacs に見せる（doom env）
 
 - config.el へのコード追加はしない。doom 公式の envvar ファイル方式を採る。
 - ホスト（macOS）の shell に mise が有効（shims が =$PATH= 上にある）状態で
@@ -95,10 +95,10 @@ TypeScript/React は javascript モジュールが担当（TS は js モジュ�
   - [X] =:lang swift= に =+lsp +tree-sitter=
   - [X] =:lang web= に =+lsp +tree-sitter=
 - [X] 既存モジュール（appearance/dired/org/IME 関連）と設定ロードが退行しない（既存 docker batch チェック）。
-- [ ] macOS の GUI Emacs を再起動し、以下をユーザーが確認する
-  - [ ] =doom env= 実行後、mise 管理下の ruby-lsp / typescript-language-server 等が =$PATH= から解決できる
-  - [ ] Ruby ファイルで ruby-lsp が起動し補完・定義ジャンプ・診断が効く（req-5.2）
-  - [ ] =.tsx= で JSX 補完・定義ジャンプと tree-sitter ハイライトが効く（req-5.3）
-  - [ ] =.swift= で sourcekit-lsp が起動し補完・診断が効く（req-5.4）
-  - [ ] HTML/CSS/SCSS で補完が効く（req-5.5）
-  - [ ] 既存の外観・dired・org・IME 設定が退行しない
+- [X] macOS の GUI Emacs を再起動し、以下をユーザーが確認する
+  - [X] =doom env= 実行後、mise 管理下の ruby-lsp / typescript-language-server 等が =$PATH= から解決できる
+  - [X] Ruby ファイルで ruby-lsp が起動し補完・定義ジャンプ・診断が効く（req-5.2）
+  - [X] =.tsx= で JSX 補完・定義ジャンプと tree-sitter ハイライトが効く（req-5.3）
+  - [X] =.swift= で sourcekit-lsp が起動し補完・診断が効く（req-5.4）
+  - [X] HTML/CSS/SCSS で補完が効く（req-5.5）
+  - [X] 既存の外観・dired・org・IME 設定が退行しない
