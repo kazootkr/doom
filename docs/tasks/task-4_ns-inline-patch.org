@@ -35,6 +35,24 @@
 現状（[[file:../../config.el][config.el]]）: macOS/NS 固有の外観設定ブロック（45–65 行）はあるが IME 連携設定は無い。
 =diff-hl-update-async= の上書きも無い（doom 既定の =thread= のまま）。
 
+** fix-1: アプリスイッチ時の IME 引きずり（動作確認で判明した不具合）
+
+task-4 実装後の macOS 実機確認で、次の不具合が判明した（[[file:../../config.el][config.el]] の IME 制御ブロックに対する追加修正）:
+
+- ケース1: Emacs が evil ノーマルステートまたは =M-x=（minibuffer）のまま他アプリへスイッチすると、
+  他アプリ（Notes.app 等）で IME を日本語入力モードに切り替えられない。切り替えても即座に英数へ戻される。
+- ケース2: insert ステートのまま他アプリへスイッチした場合も、他アプリで日本語入力モードに切り替えられない。
+
+根本原因: =mac-input-method-mode= は Emacs のフォーカス変化・=buffer-list-update= に IME 状態を同期する。
+この同期は内部で =mac-toggle-input-source=（macOS の =TISSelectInputSource=）を呼び、システム全体の
+入力ソースを書き換える。Emacs が非フォーカス（他アプリが前面）でもこの同期が走るため、ノーマルステート /
+minibuffer で IME を英数に落とした状態（req-4.2 / req-4.3）のままスイッチすると、前面アプリの入力ソースを
+Emacs の「英数」に引き戻してしまう。
+
+修正方針: =mac-toggle-input-source= を around advice でラップし、=(frame-focus-state)= が真（Emacs フレームが
+前面・フォーカスあり）のときだけ実体を呼ぶ。非フォーカス時は入力ソースを変更しないので、他アプリの IME
+切り替えに干渉しない。
+
 * やること
 
 実装は =config.el= のみ（=doom sync= 不要。=packages.el= 変更不要）。追加は 2 か所:
@@ -45,8 +63,10 @@
 2. =diff-hl= の =after!= ブロック（req-4.5）を =config.el= 末尾（org-capture ブロックの後）に追加する。
 
 冪等性: =add-hook= / =defvar= / =defun= / =setq= / =custom-set-variables= / =mac-input-method-mode 1=
-はいずれも再評価しても同じ最終状態になる。=advice-add= は使わない。既に同等のブロックがあれば、
-新規追加せず内容を一致させる（テキストの重複を作らない）。
+はいずれも再評価しても同じ最終状態になる。fix-1 では =advice-add= を使うが、無名 =lambda= ではなく
+名前付き関数をシンボルで登録する（=advice-add 'mac-toggle-input-source :around #'+ime/toggle-input-source-when-focused=）。
+=advice-add= は同じシンボルを同じ位置に重複追加しないため、再評価しても二重登録されない。既に同等の
+ブロックがあれば、新規追加せず内容を一致させる（テキストの重複を作らない）。
 
 req-4.1〜4.4 の最終的なブロックは次の 1 つにまとめる（各見出しはこの中の該当部分を担当する）:
 
@@ -124,6 +144,30 @@ req-4.1〜4.4 の最終的なブロックは次の 1 つにまとめる（各見
   この一覧には入れない。代わりに takaxp のような「isearch 開始で IME をオフにするフック」を
   =追加しない=ことで日本語入力可のままにする（=isearch-mode-hook= に IME オフを足さない）。
 
+** TODO [#A] fix-1 アプリスイッチ時に IME 状態を他アプリへ引きずらせない
+
+IME 制御ブロック（=config.el= の =(when (and (eq system-type 'darwin) (featurep 'ns) (fboundp 'mac-input-method-mode)) ...)=）
+内、=minibuffer-setup-hook= への =add-hook= の後（ブロック末尾）に、=mac-toggle-input-source= の around
+advice を追加する。Emacs が前面（フォーカスあり）のときだけ入力ソースを変更し、非フォーカス時は他アプリの
+IME 切り替えに干渉しないようにする。
+
+- =mac-toggle-input-source= は =ns-inline-patch= 適用ビルドが提供するため、ブロック先頭の =fboundp= ガード
+  で未適用ビルド・対象外環境（Linux/docker）では advice 自体が追加されない（no-op）。
+- advice は無名 =lambda= にせず、名前付き関数 =+ime/toggle-input-source-when-focused= を =defun= してから
+  シンボルで登録する（冪等性: 再評価でも二重登録されない。関数名は既存の =+ime/= プレフィックスに倣う）。
+
+#+begin_src emacs-lisp
+  ;; fix-1: アプリスイッチ時に IME 状態を他アプリへ引きずらせない。
+  ;; mac-input-method-mode はフォーカス変化・buffer-list-update に IME 状態を同期し、内部で
+  ;; mac-toggle-input-source（TISSelectInputSource）を呼んでシステム全体の入力ソースを書き換える。
+  ;; Emacs が非フォーカスの間も同期が走り前面アプリの入力ソースを Emacs の状態（英数）に引き戻すため、
+  ;; frame-focus-state が真（Emacs が前面）のときだけ入力ソースを変更する。
+  (defun +ime/toggle-input-source-when-focused (orig &rest args)
+    "Emacs フレームがフォーカスを持つときだけ ORIG（mac-toggle-input-source）を実行する。"
+    (when (frame-focus-state) (apply orig args)))
+  (advice-add 'mac-toggle-input-source :around #'+ime/toggle-input-source-when-focused)
+#+end_src
+
 ** TODO [#A] req-4.5 diff-hl の非同期更新を無効化してフリーズを回避する
 
 =config.el= 末尾に次を追加する。doom の =:ui vc-gutter= が =diff-hl= の =:config= で
@@ -142,10 +186,12 @@ req-4.1〜4.4 の最終的なブロックは次の 1 つにまとめる（各見
 
 * 完了条件
 
-- [X] =config.el= が構文エラーなくロードできる（=./docker/run.sh batch= の =check-parens= / ロード）
-- [X] 対象外環境（docker/Linux、=ns-inline-patch= 未適用）で IME ブロックが =fboundp= ガードにより
+- [ ] =config.el= が構文エラーなくロードできる（=./docker/run.sh batch= の =check-parens= / ロード）
+  （fix-1 の advice ブロック追加後に再検証）
+- [ ] 対象外環境（docker/Linux、=ns-inline-patch= 未適用）で IME ブロックが =fboundp= ガードにより
   no-op となり、設定ロードがエラーにならない（=./docker/run.sh batch=）。=+ime-minibuffer-japanese-commands= /
-  =+ime/minibuffer-setup= が docker では未定義（=void=）であることも確認（ブロック未評価の裏取り）
+  =+ime/minibuffer-setup= / =+ime/toggle-input-source-when-focused= が docker では未定義（=void=）であることも
+  確認（ブロック未評価の裏取り。fix-1 の関数も対象に追加）
 - [X] docker batch で =diff-hl= をロード（=require=）後、=diff-hl-update-async= が =nil= になっている
   （req-4.5 の上書きが doom 既定の =thread= に勝っている）
 - [ ] macOS の GUI Emacs を再起動し、以下をユーザーが確認する
@@ -157,5 +203,11 @@ req-4.1〜4.4 の最終的なブロックは次の 1 つにまとめる（各見
   - [ ] =isearch= / =isearch-forward= / =isearch-backward= で日本語を入力できる（自動オフにならない）
   - [ ] =+default/search-project= / =org-tags-view= / =org-capture= / =org-ctrl-c-ctrl-c= に伴う入力で
     日本語を入力できる（自動オフにならない）
+  - [ ] （fix-1 / ケース1）evil ノーマルステートまたは =M-x=（minibuffer）のまま他アプリへスイッチし、
+    他アプリ（Notes.app 等）で日本語入力モードに切り替えられる（英数へ引き戻されない）
+  - [ ] （fix-1 / ケース2）insert ステートのまま他アプリへスイッチしても、他アプリで日本語入力モードに
+    切り替えられる
+  - [ ] （fix-1）Emacs が前面のときは従来どおり IME 制御（ノーマルステート/minibuffer での自動オフ）が効く
+    （advice の =frame-focus-state= ガードで前面時の挙動が退行しない）
   - [ ] =diff-hl=（=:ui vc-gutter +pretty=）使用中に Emacs がフリーズせず、fringe の diff 表示は出る
   - [ ] 既存の evil 操作・他の設定が退行しない
