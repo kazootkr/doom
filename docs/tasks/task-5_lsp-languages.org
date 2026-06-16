@@ -41,7 +41,7 @@ lsp-mode は未導入時に自動インストールを促す。
 =add-to-list= 的な追記ではなく既存行の置換なので、=/sync-implementation= 実行時は対象行を
 一意に特定して置換する。最後に =doom sync=（ホスト側はユーザー依頼。docker batch は自動実行）。
 
-** TODO [#A] req-5.1 =:tools lsp= と =:tools tree-sitter= を有効化する
+** DONE [#A] req-5.1 =:tools lsp= と =:tools tree-sitter= を有効化する
 
 =:tools= ブロックで以下の2行を最終状態にする。
 
@@ -50,27 +50,27 @@ lsp-mode は未導入時に自動インストールを促す。
 - =;;tree-sitter       ; syntax and parsing, sitting in a tree...=
   → =tree-sitter       ; syntax and parsing, sitting in a tree...=
 
-** TODO [#A] req-5.2 =:lang ruby= を =+rails +lsp +tree-sitter= で有効化する
+** DONE [#A] req-5.2 =:lang ruby= を =+rails +lsp +tree-sitter= で有効化する
 
 =:lang= ブロックの ruby 行を最終状態にする。
 
 - =;;(ruby +rails)     ; 1.step ...= → =(ruby +rails +lsp +tree-sitter) ; 1.step ...=
 - バージョン管理フラグ（=+rbenv= / =+rvm= / =+chruby=）は付けない（mise 前提）。
 
-** TODO [#A] req-5.3 =:lang javascript= を =+lsp +tree-sitter= で有効化する
+** DONE [#A] req-5.3 =:lang javascript= を =+lsp +tree-sitter= で有効化する
 
 TypeScript/React は javascript モジュールが担当（TS は js モジュール、JSX/TSX は
 =+tree-sitter= 必須）。
 
 - =;;javascript        ; all(hope...= → =(javascript +lsp +tree-sitter) ; all(hope...=
 
-** TODO [#A] req-5.4 =:lang swift= を =+lsp +tree-sitter= で有効化する
+** DONE [#A] req-5.4 =:lang swift= を =+lsp +tree-sitter= で有効化する
 
 - =;;swift             ; who asked for emoji variables?=
   → =(swift +lsp +tree-sitter) ; who asked for emoji variables?=
 - サーバーは sourcekit-lsp（Xcode/Swift toolchain 同梱）。
 
-** TODO [#B] req-5.5 =:lang web= を =+lsp +tree-sitter= で有効化する
+** DONE [#B] req-5.5 =:lang web= を =+lsp +tree-sitter= で有効化する
 
 - =;;web               ; the tubes= → =(web +lsp +tree-sitter) ; the tubes=
 - HTML/CSS/SCSS 等（React の CSS、Rails の erb/haml/scss）。
@@ -86,15 +86,15 @@ TypeScript/React は javascript モジュールが担当（TS は js モジュ�
 
 * 完了条件
 
-- [ ] =init.el= が =doom!= ブロックの構文エラーなく読める（=check-parens= 相当 / docker batch）。
-- [ ] =doom sync= がエラーなく完了する（docker batch。init.el 変更により自動実行）。
-- [ ] 有効化が反映されている（docker batch で =doom-modules= を確認）:
-  - [ ] =:tools lsp=（=+eglot= 無し）と =:tools tree-sitter=
-  - [ ] =:lang ruby= に =+rails +lsp +tree-sitter=（=+rbenv= 等は無し）
-  - [ ] =:lang javascript= に =+lsp +tree-sitter=
-  - [ ] =:lang swift= に =+lsp +tree-sitter=
-  - [ ] =:lang web= に =+lsp +tree-sitter=
-- [ ] 既存モジュール（appearance/dired/org/IME 関連）と設定ロードが退行しない（既存 docker batch チェック）。
+- [X] =init.el= が =doom!= ブロックの構文エラーなく読める（=check-parens= 相当 / docker batch）。
+- [X] =doom sync= がエラーなく完了する（docker batch。init.el 変更により自動実行）。
+- [X] 有効化が反映されている（docker batch で =doom-modules= を確認）:
+  - [X] =:tools lsp=（=+eglot= 無し）と =:tools tree-sitter=
+  - [X] =:lang ruby= に =+rails +lsp +tree-sitter=（=+rbenv= 等は無し）
+  - [X] =:lang javascript= に =+lsp +tree-sitter=
+  - [X] =:lang swift= に =+lsp +tree-sitter=
+  - [X] =:lang web= に =+lsp +tree-sitter=
+- [X] 既存モジュール（appearance/dired/org/IME 関連）と設定ロードが退行しない（既存 docker batch チェック）。
 - [ ] macOS の GUI Emacs を再起動し、以下をユーザーが確認する
   - [ ] =doom env= 実行後、mise 管理下の ruby-lsp / typescript-language-server 等が =$PATH= から解決できる
   - [ ] Ruby ファイルで ruby-lsp が起動し補完・定義ジャンプ・診断が効く（req-5.2）
