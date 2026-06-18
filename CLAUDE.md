@@ -23,9 +23,10 @@ OS・Emacs バージョン・ビルドフィーチャーは [README.org](README.
 
 ## リポジトリ構成
 
-- `init.el`（`doom!` モジュール選択）・`packages.el`（追加パッケージ）— **変更時は `doom sync` が必要**。ホストでの実行はユーザーに依頼（docker は自動 → 下記）。
+- `init.el`（`doom!` モジュール選択）・`packages.el`（追加パッケージ）— **変更時は `doom sync` が必要**。ホストでの実行はユーザーに依頼（docker は自動 → 下記。編集時は PostToolUse フックがリマインド）。
 - `config.el` — 設定本体（`doom sync` 不要）。**遅延ロードされる変数の上書きは素の `setq` でなく `after!` ブロックで**（例: `diff-hl-update-async`）。
 - macOS/NS 固有設定は `(when (and (eq system-type 'darwin) (featurep 'ns)) ...)` ガード内（Linux・docker では no-op）。現状は外観設定のみ。IME 連携は未実装。
+- `.claude/hooks/` — ハーネス強制ルール（`.claude/settings.json` で配線）。PreToolUse: ホストでの GUI Emacs 起動を deny／PostToolUse: init.el・packages.el 編集時に doom sync をリマインド。
 
 ## 実装方針
 
@@ -36,7 +37,7 @@ OS・Emacs バージョン・ビルドフィーチャーは [README.org](README.
 
 ## 動作確認（Docker）
 
-**ホストで Emacs を起動せず**、`docker/` の隔離 Linux コンテナで検証（このリポジトリを DOOMDIR にマウント）。
+**ホストで Emacs を起動せず**（GUI 起動は PreToolUse フックで deny）、`docker/` の隔離 Linux コンテナで検証（このリポジトリを DOOMDIR にマウント）。
 
 ```sh
 ./docker/run.sh build              # イメージ作成（初回・Dockerfile 変更時）
