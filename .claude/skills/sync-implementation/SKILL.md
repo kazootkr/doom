@@ -1,6 +1,8 @@
 ---
 name: sync-implementation
-description: 引数で指定されたタスクファイルを task-<番号> 形式（例: task-2）で受け取り、その「やること」に実装を同期する（実装し、完了条件を検証し、チェックボックスを更新する）。ユーザーが「task-N を適用して」「task-N の内容を実装して」「task-N に同期して」「/sync-implementation task-N」などと依頼したとき、spec 駆動開発でタスクから実装に進むステップでは必ずこのスキルを使うこと。タスクファイル自体の作成には create-task を、要求の作成には create-requirement を使い、このスキルは使わない。doom sync（パッケージ同期コマンド）とは無関係。
+description: task-<番号>（例: task-2）を受け取り、その「やること」に実装を同期する（実装・完了条件の検証・チェックボックス更新）。
+disable-model-invocation: true
+argument-hint: <実装するタスク番号(形式: task-[0-9]+)>
 allowed-tools: Read(./config.el) Read(./init.el) Read(./packages.el)
 ---
 

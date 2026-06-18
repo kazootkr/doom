@@ -1,6 +1,7 @@
 ---
 name: create-requirement
-description: ユーザーのプロンプトから要求を抽出し、docs/requirements/ 以下に req-<番号>_<subject>.org 形式の要求ファイルを作成する。引数で既存の要求が req-<番号> 形式（例: req-3）で渡された場合は新規作成せず、その既存要求ファイルに要求を追記する（動作確認後の課題・変更依頼・不具合の反映に使う）。ユーザーが「要求を作って」「要求化して」「要求ファイルにして」「req を起こして」「req-N に追記して」などと依頼したとき、または spec 駆動開発の最初のステップとして機能追加・不具合修正・設定変更の要望を文書化するときは必ずこのスキルを使うこと。タスク化（docs/tasks/ へのファイル作成）の依頼にはこのスキルを使わない。
+description: ユーザーのプロンプトから要求を抽出し docs/requirements/ に req-<番号>_<subject>.org を作成する。引数で req-<番号>（例: req-3）が渡されたら新規作成せず、その既存要求に追記する。
+disable-model-invocation: true
 argument-hint: [<要求番号(形式: req-[0-9]+)(optional)>] <自由記述...>
 allowed-tools: Read(~/.config/emacs/**) Read(./**)
 ---

@@ -1,6 +1,8 @@
 ---
 name: create-task
-description: 引数で指定された要求ファイルを req-<番号> 形式（例: req-1）で受け取り、docs/tasks/ 以下に要求と 1 対 1 で対応する task-<番号>_<subject>.org 形式のタスクファイルを作成する（番号・subject は要求と一致）。対応するタスクファイルが既に存在する場合は新規作成せず、その既存タスクを更新して要求の差分を取り込む。ユーザーが「req-N をタスク化して」「タスクを作って」「task に落として」「req-N に基づきタスクファイルを作成」などと依頼したとき、spec 駆動開発で要求からタスクを起こすステップでは必ずこのスキルを使うこと。要求ファイル自体の作成（docs/requirements/）には create-requirement を使い、このスキルは使わない。
+description: req-<番号>（例: req-1）を受け取り、要求と 1 対 1 で対応する docs/tasks/task-<番号>_<subject>.org を作成する（番号・subject は要求と一致）。既存タスクがあれば新規作成せず更新して要求の差分を取り込む。
+disable-model-invocation: true
+argument-hint: <タスク化する要求番号(形式: req-[0-9]+)>
 allowed-tools: Read(~/.config/emacs/**) Read(./**)
 ---
 
