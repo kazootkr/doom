@@ -4,16 +4,14 @@
 #+STARTUP: nolineimages
 #+STARTUP: hidestars
 
-これはdoomemacs用の個人設定ファイルです。
+これはDoom Emacs用の個人設定ファイルです。
 
-- doomemacs: https://github.com/doomemacs/core
-
-* 利用環境
+* 実行環境
 
 - macOS 26(Apple Silicon)
-- GNU Emacs 30.2（NS port, ns-inline-patch 適用済み）
-  - 主要ビルドフィーチャー: TREE_SITTER / SQLITE3 / MODULES / GNUTLS / LIBXML2
-- Doom Emacs
+- GNU Emacs 30.2（ビルドスクリプト: https://github.com/kazootkr/emacs-build)
+  - 主要ビルドフィーチャー: TREE_SITTER / NATIVE_COMP / SQLITE3 / MODULES / GNUTLS / LIBXML2
+- Doom Emacs: https://github.com/doomemacs/core
 
 
 * 設定(コード)変更プロセス
