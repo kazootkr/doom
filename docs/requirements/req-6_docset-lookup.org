@@ -1,0 +1,80 @@
+#+title: req-6_docset-lookup
+#+STARTUP: indent
+#+STARTUP: showall
+#+STARTUP: nolineimages
+#+STARTUP: hidestars
+
+* 背景
+
+Dash 形式の docset を Emacs から閲覧したい。=init.el= の =lookup= モジュールに =+docsets= フラグを付ける（=dash-docs= と =consult-dash= が導入される。=consult-dash= は =+docsets= に同梱されるため追加パッケージは不要）。
+
+Dash.app（アプリ）には依存せず、Emacs だけで docset の「インストール → 閲覧」を完結させる。doom の =+docsets= 既定値はこの方針に合致する: docset 格納先 =dash-docs-docsets-path= は Emacs 管理下（=doom-profile-data-dir/docsets/=）、閲覧は =dash-docs-browser-func= = =#'eww=（Emacs 内表示）。したがって docset 格納先を Dash.app のディレクトリへ向ける必要はなく、変数の上書きも原則不要。結果としてクロスプラットフォーム（macOS 非依存）になり、docker でも検証できる。
+
+completion は =vertico=（consult 連携可）。docset 検索の前提となる =sqlite3= は導入済み。lookup 系の言語別設定は [[file:req-5_lsp-languages.org][req-5 lsp-languages]] を参照。
+
+* 要求一覧
+
+** req-6.1: Emacs だけで docset のインストールから閲覧まで完結すること（必須）
+
+=(lookup +docsets)= の =dash-docs= を用いて、docset の取得から閲覧までを Emacs 内で完結できること。
+
+- docset の格納先は Emacs 管理下（doom 既定の =dash-docs-docsets-path=）とし、Dash.app の格納先には依存しない。
+- Emacs 内のコマンドで docset を取得（インストール）できる。
+- 取得済みの docset を Emacs 内（=eww=）で閲覧できる。
+- macOS 非依存とし、Linux/docker でも動作する（darwin ガードに入れない）。
+
+** req-6.2: よく使う major mode に docset を紐付け、mode 対応の検索ができること
+
+=set-docsets!= で major mode と docset を関連付け、その mode で =+lookup/documentation=（=K=）や =+lookup/in-docsets= が当該 docset を検索すること。
+
+- 初期登録の対象 mode・docset の具体は「タスクへの引き継ぎ」を参照。
+
+** req-6.3: dash 関連の利用頻度の高いコマンドを =SPC d= 配下に割り当てること
+
+検索・閲覧・docset 管理（インストール / 有効化 / 無効化）を =SPC d *= に集約すること。
+
+- which-key にグループ名が表示されること。
+- 具体的なキー割当は「タスクへの引き継ぎ」を参照。
+
+* タスクへの引き継ぎ
+
+実装手段の具体（要求本文では確定させない参照情報）。
+
+** キーバインド割当（=SPC d=）
+
+| キー      | コマンド                       | 用途                                                    |
+|-----------+--------------------------------+---------------------------------------------------------|
+| =SPC d d= | =+lookup/in-all-docsets=       | 全 docset 横断検索                                       |
+| =SPC d f= | =consult-dash=                 | consult ライブプレビュー検索                            |
+| =SPC d k= | =+lookup/documentation=        | カーソル位置の語を検索（mode 対応 → docset フォールバック） |
+| =SPC d i= | =dash-docs-install-docset=     | docset を取得                                             |
+| =SPC d a= | =dash-docs-activate-docset=    | docset を常時検索対象（common）に追加                   |
+| =SPC d A= | =dash-docs-deactivate-docset=  | common から除外                                         |
+
+- =SPC d= に which-key グループ名（例: "dash"）を付ける。
+
+** =set-docsets!= の初期登録
+
+- ユーザーが Ruby 中心のため =(set-docsets! '(ruby-mode ruby-ts-mode) "Ruby")= を起点とする。
+- docset 名は =dash-docs-install-docset= で取得した docset の名称に一致させる（インストール後に有効化される）。
+
+** 配置
+
+- =map!= と =set-docsets!= は =config.el= に追記する。
+- =dash-docs= の変数上書きが必要になった場合のみ =after! dash-docs= 内に置く（遅延ロードのため）。
+
+* 非機能要求・制約
+
+- 設定は =config.el= に置く（=doom sync= 不要）。=init.el= のフラグ変更分の =doom sync= のみ別途必要（ホストはユーザー依頼、docker は自動）。
+- macOS 非依存・クロスプラットフォーム（darwin ガードに入れない。Linux/docker で no-op にならず動作すること）。
+- docker で検証可能: 小さな docset を取得 → 検索でヒットすることまで確認できる。
+
+受け入れ確認手順:
+
+- [ ] =(lookup +docsets)= で =doom sync= が通り、=dash-docs= / =consult-dash= がロードされる。
+- [ ] Emacs から =dash-docs-install-docset= で docset を取得できる。
+- [ ] =SPC d d= / =SPC d f= で取得済み docset を検索し、結果を =eww= で閲覧できる。
+- [ ] =SPC d= 配下のキーが which-key に表示され、各コマンドが起動する。
+- [ ] =set-docsets!= 登録 mode で =+lookup/documentation=（=K=）が当該 docset を検索する。
+- [ ] docker（Linux）でも取得 → 検索が動作する（macOS 非依存の確認）。
+- [ ] 既存のキーバインド・lookup 挙動が退行しない。
