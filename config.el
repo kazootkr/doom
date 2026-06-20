@@ -218,4 +218,6 @@
 ;; req-6.2 (docs/requirements/req-6_docset-lookup.org)
 ;; Ruby バッファで K / +lookup/in-docsets が "Ruby" docset を検索するよう紐付け。
 ;; docset 名は dash-docs-install-docset で取得した名称に一致させる。
-(set-docsets! '(ruby-mode ruby-ts-mode) "Ruby")
+(set-docsets! '(ruby-mode ruby-ts-mode) "Ruby"
+  ["ruby_on_rails_guides_ja" (eq major-mode 'ruby-mode)]
+  ["Emacs_Lisp" (eq major-mode 'emacs-lisp-mode)])
