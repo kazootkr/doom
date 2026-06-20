@@ -203,3 +203,19 @@
 ;; 無効化する。doom が diff-hl の :config で設定するため after! で上書きする（fringe 表示は維持）。
 (after! diff-hl
   (setq diff-hl-update-async nil))
+
+;; req-6.3 (docs/requirements/req-6_docset-lookup.org)
+;; dash-docs 系コマンドを SPC d 配下に集約（dash-docs / consult-dash は lookup +docsets で導入）。
+(map! :leader
+      (:prefix ("d" . "dash")
+       :desc "Search all docsets"     "d" #'+lookup/in-all-docsets
+       :desc "consult-dash"           "f" #'consult-dash
+       :desc "Documentation at point" "k" #'+lookup/documentation
+       :desc "Install docset"         "i" #'dash-docs-install-docset
+       :desc "Activate docset"        "a" #'dash-docs-activate-docset
+       :desc "Deactivate docset"      "A" #'dash-docs-deactivate-docset))
+
+;; req-6.2 (docs/requirements/req-6_docset-lookup.org)
+;; Ruby バッファで K / +lookup/in-docsets が "Ruby" docset を検索するよう紐付け。
+;; docset 名は dash-docs-install-docset で取得した名称に一致させる。
+(set-docsets! '(ruby-mode ruby-ts-mode) "Ruby")
