@@ -221,3 +221,9 @@
 (set-docsets! '(ruby-mode ruby-ts-mode) "Ruby"
   ["ruby_on_rails_guides_ja" (eq major-mode 'ruby-mode)]
   ["Emacs_Lisp" (eq major-mode 'emacs-lisp-mode)])
+
+
+;; 非アクティブ時に 85% へ落とす(数字を下げるほど目立つ)
+(add-to-list 'default-frame-alist '(alpha . (100 . 85)))
+;; 既存フレームにも今すぐ適用するなら
+(set-frame-parameter nil 'alpha '(100 . 88))
