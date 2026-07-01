@@ -10,6 +10,7 @@
 
 - macOS 26(Apple Silicon)
 - GNU Emacs 30.2（ビルドスクリプト: https://github.com/kazootkr/emacs-build)
+  - NS port + ns-inline-patch 適用ビルド（macOS/NS 固有設定・IME 連携の前提）
   - 主要ビルドフィーチャー: TREE_SITTER / NATIVE_COMP / SQLITE3 / MODULES / GNUTLS / LIBXML2
 - Doom Emacs: https://github.com/doomemacs/core
 
@@ -22,6 +23,9 @@ spec駆動開発を採用しています。
 1. =/create-requirement= — プロンプト → 要求（docs/requirements/）
 2. =/create-task= — 要求 → タスク（docs/tasks/）
 3. =/sync-implementation= — タスク → 実装・検証（完了条件のチェック更新まで）
+
+要求は「なぜ・何を作るか」、タスクは「どう実装するか」を書きます。
+背景・経緯はこれらの docs/ 配下のファイルを正とします。
 
 ** コミット運用
 
