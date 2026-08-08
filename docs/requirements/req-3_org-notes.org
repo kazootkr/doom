@@ -32,6 +32,16 @@ notes
 - =org-capture= は Doom の =org= モジュールが既定テンプレート付きで提供する。今回はユーザー指定の
   ToDo テンプレートで差し替える。
 
+req-3.1〜3.4 の運用開始後に出た課題（req-3.5）:
+
+- TODO の状態キーワードが 16 個（=TODO= / =PROJ= / =LOOP= / =STRT= / =WAIT= / =HOLD= / =IDEA= /
+  =DONE= / =KILL=、=[ ]= / =[-]= / =[?]= / =[X]=、=OKAY= / =YES= / =NO=）あり、状態選択時の
+  選択肢が多すぎる。
+- これは Doom の =:lang org= モジュールが =org-todo-keywords= に設定している既定値（3 本の
+  =sequence=）で、この DOOMDIR 側では未設定のため既定がそのまま効いている。
+- =notes= 配下の org ファイルで実際に使われている状態は =TODO= / =DONE= / =STRT= の 3 つのみ。
+  =PROJ= / =LOOP= / =IDEA= / =HOLD= / =[ ]= 系 / =OKAY= / =YES= / =NO= の使用実績はない。
+
 * 要求一覧
 
 ** req-3.1: ノート用ルートディレクトリを定義すること（必須）
@@ -73,6 +83,18 @@ org のタグ検索・agenda・TODO 一覧（=org-agenda= 系）の探索対象�
 - =s= "Scheduled Todo": =Reminder.org= の =■ Scheduled Todo= 見出し配下に、入力した日付を伴う
   =* TODO ...= を追記する。
 - 出力先 =Reminder.org= のパスは req-3.1 の =notes= を参照すること。
+
+** req-3.5: TODO の状態キーワードを実際に使う 5 つに絞ること（必須）
+
+org の TODO 状態キーワードが、Doom 既定の 16 個ではなく次の 5 つだけになること。
+
+- 未完了状態: =TODO= （ショートカット =t=）、=STRT= （=s=）、=WAIT= （=w=）。
+- 完了状態: =DONE= （=d=）、=KILL= （=k=）。
+- =sequence= は 1 本にまとめ、=[ ]= / =[-]= / =[?]= / =[X]= の系統と =OKAY= / =YES= / =NO= の
+  系統は持たないこと。
+- =notes= 配下の既存ノートで使用中の =TODO= / =DONE= / =STRT= は必ず含めること（既存の見出しが
+  TODO 状態として認識されなくなり、素のテキストや agenda 対象外に落ちることがないようにする）。
+- Doom の =:lang org= が既定値を設定するため、この DOOMDIR 側の設定が既定を確実に上書きすること。
 
 * タスクへの引き継ぎ
 
@@ -118,6 +140,11 @@ org-capture テンプレート（req-3.4）:
   「=org-agenda-files= 等が =notes= 配下を対象とする設定になっている」「=org-capture-templates= に
   =t= / =s= が定義される」程度。実際の日誌ファイル生成・capture フレームの動作・agenda への日誌
   反映は macOS 実機でユーザーに依頼する。
+- req-3.5 の =org-todo-keywords= は Doom の =:lang org= が遅延ロード時に設定するため、既定値の
+  上書きが確実に効くロードタイミング（素の =setq= か =after!= か）はタスクで設計する。設定先は
+  =config.el= のみで、=init.el= / =packages.el= の変更は不要（=doom sync= も不要）。
+- req-3.5 の状態選択 UI の見え方・既存ノートの表示は macOS 実機でユーザーに確認を依頼する
+  （docker では変数値までしか確認できない）。
 
 受け入れ確認手順:
 
@@ -129,5 +156,11 @@ org-capture テンプレート（req-3.4）:
 - [ ] タグ検索・agenda・TODO 一覧が =notes= 配下（サブディレクトリ含む）の org ファイル全体を対象にしている
 - [ ] =org-capture-templates= に =t= "Todo" と =s= "Scheduled Todo" が定義され、出力先が =notes/Reminder.org= になっている
 - [ ] =t= / =s= の capture で =Reminder.org= の =■ ToDo= / =■ Scheduled Todo= 見出し配下に ToDo が追記される（macOS 実機）
+- [ ] =org-todo-keywords= が 1 本の =sequence= で =TODO(t)= / =STRT(s)= / =WAIT(w)= / =|= /
+  =DONE(d)= / =KILL(k)= の 5 状態のみになっている（=./docker/run.sh batch=）
+- [ ] =[ ]= / =[-]= / =[?]= / =[X]= と =OKAY= / =YES= / =NO= の系統が残っていない
+- [ ] org ファイルの状態選択（=SPC m t= / =C-c C-t=）に表示される候補が上記 5 つだけになる（macOS 実機）
+- [ ] =notes= 配下の既存ノートの =TODO= / =DONE= / =STRT= 見出しが従来どおり TODO 状態として
+  認識され、agenda・TODO 一覧に載る（macOS 実機）
 - [ ] 設定ロード時にエラーが出ない（=./docker/run.sh batch=）
 - [ ] 対象外環境（docker/Linux）でノート用パスが存在しなくても設定ロードがエラーにならない
