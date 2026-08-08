@@ -33,12 +33,18 @@ org-mode で日誌・メモ・ToDo を 1 つのノート用ディレクトリ（
 =my-dev-notes-dir= の 1 か所を変えれば全設定が追従する。docker/Linux にはこのパスが無いので、
 agenda 設定はパス存在をガードして対象外環境で no-op にする。
 
+追加（req-3.5、req-3.1〜3.4 の運用開始後に判明）: TODO の状態キーワードが 16 個あり選択肢が
+多すぎる。これは doom の =:lang org= が =org-todo-keywords= に 3 本の =sequence= を設定している
+既定値で、この DOOMDIR では未設定のため既定がそのまま効いている。=notes= 配下で実使用がある状態は
+=TODO= / =DONE= / =STRT= の 3 つのみのため、これらを含む 5 状態（=TODO= / =STRT= / =WAIT= /
+=DONE= / =KILL=）へ絞る。既存見出しが TODO 状態として認識されなくなる退行を出さないことが条件。
+
 * やること
 
 実装は 2 ファイルにまたがる:
 
 - =config.el=（=doom sync= 不要）— req-3.1 のルート定義と =org-directory= 差し替え、
-  req-3.2/3.3/3.4 の org-journal・agenda・capture 設定。
+  req-3.2/3.3/3.4 の org-journal・agenda・capture 設定、req-3.5 の TODO キーワード上書き。
 - =init.el=（=doom sync= 必要）— req-3.2 の =+journal= フラグ追加。
 
 ** DONE [#A] req-3.1 ノート用ルートを定義し =org-directory= を合わせる
@@ -123,6 +129,30 @@ agenda 設定はパス存在をガードして対象外環境で no-op にする
            "* TODO %? # SCHEDULED: %^t"))))
 #+end_src
 
+** TODO [#B] req-3.5 TODO 状態キーワードを 5 つに絞る
+
+=config.el= の =after! org-capture= ブロックの後（=after! diff-hl= ブロックの前）に以下を追加する。
+既に =after! org= の =org-todo-keywords= 設定があれば内容を要求値に合わせるだけで、ブロックを
+増やさない。
+
+doom の =:lang org= は =:config= 内で =org-todo-keywords= に 3 本の =sequence=（16 状態）を
+設定するため、素の =setq= では doom 側に上書きされる。=after! org= でモジュール設定の後に適用して
+要求値を勝たせる（=after! dired= / =after! diff-hl= と同じ理由）。=setq= は冪等。
+
+=org-todo-keyword-faces= は変更しない。doom 既定に =STRT= / =WAIT= / =KILL= の色付けが含まれて
+おり、残す 5 状態はそのまま色が付く。対応キーワードが無くなる =[-]= / =[?]= / =PROJ= / =NO= の
+エントリは参照されなくなるだけで無害。
+
+#+begin_src emacs-lisp
+;; req-3.5 (docs/requirements/req-3_org-notes.org)
+;; TODO 状態を実際に使う 5 つに絞る。doom の :lang org が :config で org-todo-keywords に
+;; 16 状態（3 本の sequence）を設定するため、after! でその後に適用して要求値を勝たせる。
+;; 既存ノートで使用中の TODO / DONE / STRT は必ず残す（既存見出しが素のテキストに落ちるため）。
+(after! org
+  (setq org-todo-keywords
+        '((sequence "TODO(t)" "STRT(s)" "WAIT(w)" "|" "DONE(d)" "KILL(k)"))))
+#+end_src
+
 * 完了条件
 
 - [X] =config.el= が構文エラーなくロードできる（=./docker/run.sh batch= の =check-parens= / ロード）
@@ -138,7 +168,10 @@ agenda 設定はパス存在をガードして対象外環境で no-op にする
 - [X] 対象外環境（docker/Linux、=notes= 不在）で =file-directory-p= ガードにより agenda 設定が
   no-op となり、設定ロードがエラーにならない（=./docker/run.sh batch=）。一時 notes ディレクトリで
   再帰収集がルート＋サブディレクトリを列挙することも確認
-- [X] macOS の GUI Emacs を再起動し、以下をユーザーが確認する
+- [ ] docker batch で =org= をロード（=require=）後、=org-todo-keywords= が
+  =((sequence "TODO(t)" "STRT(s)" "WAIT(w)" "|" "DONE(d)" "KILL(k)"))= の 1 本だけになっている
+  （=[ ]= / =[-]= / =[?]= / =[X]= と =OKAY= / =YES= / =NO= の系統が残っていない）
+- [ ] macOS の GUI Emacs を再起動し、以下をユーザーが確認する
   - [X] =my-dev-notes-dir= が実際の notes ルートを指し、=org-directory= が同じ値になっている
   - [X] =org-journal-dir= が =notes/journal/= を指し、日誌が =notes/journal/org-journal_<日付>.org= に保存される
   - [X] 日誌のファイル先頭が =#+TITLE: %Y/%m/%d (%a)= 形式の見出しと指定の =#+STARTUP:= 群になっている
@@ -146,4 +179,8 @@ agenda 設定はパス存在をガードして対象外環境で no-op にする
     サブディレクトリ以下すべて）の org ファイルを対象にしている
   - [X] =t= / =s= の capture で =Reminder.org= の =■ ToDo= / =■ Scheduled Todo= 見出し配下に
     ToDo が追記される
+  - [ ] org ファイルの状態選択（=SPC m t= / =C-c C-t=）の候補が =TODO= / =STRT= / =WAIT= /
+    =DONE= / =KILL= の 5 つだけになっている
+  - [ ] =notes= 配下の既存ノートの =TODO= / =DONE= / =STRT= 見出しが従来どおり TODO 状態として
+    認識され（色付き表示）、agenda・TODO 一覧に載る
   - [X] 既存の org 操作・他の設定が退行しない
