@@ -197,6 +197,14 @@
            (file+headline ,(concat my-dev-notes-dir "Reminder.org") "■ Scheduled Todo")
            "* TODO %? # SCHEDULED: %^t"))))
 
+;; req-3.5 (docs/requirements/req-3_org-notes.org)
+;; TODO 状態を実際に使う 5 つに絞る。doom の :lang org が :config で org-todo-keywords に
+;; 16 状態（3 本の sequence）を設定するため、after! でその後に適用して要求値を勝たせる。
+;; 既存ノートで使用中の TODO / DONE / STRT は必ず残す（外すと既存見出しが素のテキストに落ちる）。
+(after! org
+  (setq org-todo-keywords
+        '((sequence "TODO(t)" "STRT(s)" "WAIT(w)" "|" "DONE(d)" "KILL(k)"))))
+
 ;; req-4.5 (docs/requirements/req-4_ns-inline-patch.org)
 ;; doom の :ui vc-gutter は Emacs 30 系で diff-hl-update-async を 'thread にする。macOS NS port +
 ;; Emacs 30 + スレッド非同期更新で diff-hl がフリーズする (dgutov/diff-hl#230) ため、非同期更新を
