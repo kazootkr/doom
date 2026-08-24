@@ -26,6 +26,38 @@ doom 既定テンプレートのままで、=doom-theme= は =doom-one=、=doom-
 macOS 固有要素（JetBrains Mono / Hiragino / anti-aliasing / 表示幅）は docker（Linux）で検証
 できないため、最終確認はユーザーに依頼する。
 
+** fix-1: org の src ブロック内で選択範囲が見えない（動作確認で判明した不具合）
+
+req-1.4 のテーマ適用後、macOS 実機での確認で次の不具合が判明した:
+
+- org の =#+begin_src= 〜 =#+end_src= 内でリージョンを選択しても背景色が変わらず、選択範囲を視認できない。
+
+根本原因: =doom-solarized-dark-high-contrast= が =region= とコードブロック系 face に同じ色を割り当てている。
+テーマ定義（=doom-solarized-dark-high-contrast-theme.el=）で =(region base0)=・
+=((org-block &override) :background base0)=・=((org-block-begin-line &override) ... :background base0)= と
+なっており、いずれも =base0= = =#01323d=。docker 上の実測でも =default #002732= / =region #01323d= /
+=org-block #01323d= / =org-block-begin-line #01323d= / =org-block-end-line #01323d= と一致を確認した。
+ブロック外は地の色 =#002732= と =region= の =#01323d= に差があるため選択が見えるが、ブロック内だけ差がゼロになる。
+
+修正方針: =org-block= / =org-block-begin-line= / =org-block-end-line= の背景をテーマの =base3=（=#13383C=）に
+して =region= と分離する。=base3= は doom-themes-base での =org-block= の既定値で、地の色 =#002732= より明るいため
+コードブロックの輪郭も保たれる。
+
+** fix-2: 対象外環境（Linux/docker）で可変ピッチフォント指定が初期化を止める（動作確認で判明した不具合）
+
+fix-1 の docker 検証中に次の不具合が判明した:
+
+- docker（Linux）で GUI 起動すると =Could not find a font on your system: Hiragino Kaku Gothic ProN= が出て
+  初期化が中断し、テーマが適用されないまま停止する。
+
+根本原因: req-1.3 の =doom-variable-pitch-font=（Hiragino Kaku Gothic ProN）が =config.el= のトップレベル
+（darwin/NS ガードの外）に置かれている。Hiragino は macOS 専用フォントのため、Linux では doom のフォント適用が
+=after-init-hook= で =user-error= を投げ、以降の初期化（テーマ適用を含む）が走らない。req-1 の非機能要求
+「macOS 固有の設定は darwin / NS port を判定するガード内に置き、対象外環境では no-op」に反しており、完了条件
+「対象外環境で macOS 固有設定が no-op となり、エラーにならない」も実態としては満たせていない。
+
+修正方針: =doom-variable-pitch-font= の =setq= を既存の darwin/NS ガードブロック内へ移す。
+
 * やること
 
 実装対象は =config.el= と =init.el=。=config.el= の doom 変数・=line-spacing= はトップレベルの
@@ -95,8 +127,9 @@ macOS 固有要素（JetBrains Mono / Hiragino / anti-aliasing / 表示幅）は
 
 - 表示幅の判断ルール: 上記 rescale 係数（既定 =1.0=）を起点に、org テーブルの罫線が縦にそろう
   まで（= 全角 1 文字 = 半角 2 文字幅になるまで）係数を調整する。macOS 上での目視で確定する。
-- 可変ピッチ（地の文）フォントは =config.el= トップレベルに設定する。日本語が崩れない（中華
-  フォント化・豆腐化しない）ことを優先し、ラテン・日本語とも収まる比例フォントを使う:
+- 可変ピッチ（地の文）フォントは darwin/NS ガードブロック内に設定する（配置は fix-2 で確定）。
+  日本語が崩れない（中華フォント化・豆腐化しない）ことを優先し、ラテン・日本語とも収まる比例
+  フォントを使う:
 
 #+begin_src emacs-lisp
 (setq doom-variable-pitch-font (font-spec :family "Hiragino Kaku Gothic ProN" :size 15))
@@ -126,23 +159,59 @@ macOS 固有要素（JetBrains Mono / Hiragino / anti-aliasing / 表示幅）は
 （=ultra-scroll= でピクセル平滑、=good-scroll= で PgUp/PgDn・=C-d=/=C-u= の補間。=doom sync= 必要）。
 必須要求（req-1.1〜1.4）より優先度は低い。
 
+** TODO [#A] fix-1 org のコードブロック系 face の背景を =base3= にして =region= と分離する
+
+=config.el= 末尾（req-6.2 の =set-docsets!= の後、フレーム透過設定の前）に =custom-set-faces!= を追加する。
+=custom-set-faces!= は doom の =doom-customize-theme-hook= 経由でテーマロード後に再適用されるため、=after!= や
+適用順の考慮は不要（再評価しても同じ最終状態になる）。色はハードコードせず =(doom-color 'base3)= でテーマの
+パレットから引く。既に同等のブロックがあれば新規追加せず内容を一致させる。
+
+#+begin_src emacs-lisp
+;; fix-1 (docs/tasks/task-1_appearance.org)
+;; doom-solarized-dark-high-contrast は region と org-block 系 face の双方に base0 (#01323d) を割り当てる
+;; ため、src ブロック内の選択範囲が視認できない。org-block 系の背景をテーマの base3 (#13383C) にして
+;; region と分離する。custom-set-faces! はテーマロード後に再適用されるので適用順の考慮は不要。
+(custom-set-faces!
+  `((org-block org-block-begin-line org-block-end-line)
+    :background ,(doom-color 'base3)))
+#+end_src
+
+** TODO [#A] fix-2 =doom-variable-pitch-font= を darwin/NS ガード内へ移す
+
+=config.el= のトップレベルにある =(setq doom-variable-pitch-font (font-spec :family "Hiragino Kaku Gothic ProN" :size 15))=
+を削除し、同じ =setq= を既存の darwin/NS ガードブロック（=(when (and (eq system-type 'darwin) (featurep 'ns)) ...)=）内の
+=ns-antialias-text= の設定の直後へ置く。ガード外に残っていれば削除し、ガード内に無ければ追加する（=setq= は冪等なので
+既に移動済みなら変更しない）。req-1.3 の要求内容（可変ピッチフォントの指定）自体は変えない。
+
+#+begin_src emacs-lisp
+  ;; req-1.3: 地の文の可変ピッチフォント。日本語が崩れないよう Hiragino を使う。
+  ;; Hiragino は macOS 専用のため、対象外環境（Linux/docker）で doom のフォント適用が user-error に
+  ;; ならないよう darwin/NS ガード内に置く。
+  (setq doom-variable-pitch-font (font-spec :family "Hiragino Kaku Gothic ProN" :size 15))
+#+end_src
+
 * 完了条件
 
 - [X] =config.el= が構文エラーなくロードできる（=./docker/run.sh batch= の =check-parens= / ロード）
 - [X] =doom-theme= が =doom-solarized-dark-high-contrast= になっている（docker batch で適用確認）
 - [X] =init.el= で =ligatures= / =unicode= / =indent-guides= / =nav-flash= / =(emoji +unicode)= /
   =(smooth-scroll +interpolate)= が有効化され、=doom sync= がエラーなく完了する（=./docker/run.sh batch=）
-- [X] 対象外環境（Linux / docker）で darwin/NS ガード内の macOS 固有設定が no-op となり、エラーにならない
-- [X] macOS の GUI Emacs を再起動し、以下をユーザーが確認する
+- [ ] 対象外環境（Linux / docker）で darwin/NS ガード内の macOS 固有設定が no-op となり、エラーにならない
+- [ ] fix-1: docker で =org-block= / =org-block-begin-line= / =org-block-end-line= の背景が =#13383C= になり、
+  =region= の =#01323d= と異なる（=./docker/run.sh screenshot= と face の実測）
+- [ ] fix-2: docker（Linux）の GUI 起動で =Could not find a font on your system= が出ず、テーマが適用される
+- [ ] macOS の GUI Emacs を再起動し、以下をユーザーが確認する
   - [X] =doom-font= が JetBrains Mono・サイズ 15 で表示される（=M-x describe-font= または目視）
   - [X] 行間が既定より広く、行の高さが約 1.2 倍になっている
   - [X] JetBrains Mono の合字（=->= / =>== 等）が表示される
   - [X] 文字が anti-aliasing 表示される
   - [X] 日本語（ひらがな・カタカナ・漢字）が日本語フォント（Hiragino 等）で表示され、豆腐・中華フォントが出ない
   - [X] 全角日本語と半角英数の表示幅がそろい、org テーブルの桁ズレが出ない
-  - [X] org / markdown の地の文が可変ピッチフォントで読みやすく表示され、日本語も崩れない
+  - [ ] org / markdown の地の文が可変ピッチフォントで読みやすく表示され、日本語も崩れない（fix-2 で配置が変わるため再確認）
   - [X] =unicode= 有効化後も日本語が日本語フォントで表示され、中華フォント化・豆腐化しない（req-1.3 の退行なし）
   - [X] インデントガイドが表示される
   - [X] 大きな移動の後にカーソル行が点滅する
   - [X] 絵文字が描画される☀️
   - [X] スムーススクロール（PgUp/PgDn・=C-d= / =C-u= の補間を含む）が効く
+  - [ ] fix-1: org の =#+begin_src= 〜 =#+end_src= 内で選択範囲が背景色で判別でき、コードブロックの
+    輪郭も地の文と区別できる
