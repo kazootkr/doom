@@ -172,10 +172,12 @@
 ;; org-journal の書式設定。保存先 org-journal-dir は doom (+journal) が org-directory 配下の
 ;; "journal/" に設定するため、ここでは書式のみ指定する。
 (after! org-journal
+  (setq org-journal-file-type 'monthly)
   (setq org-journal-file-format "org-journal_%Y-%m-%d.org")
-  (setq org-journal-date-prefix "#+TITLE: ")
-  (setq org-journal-date-format "%Y/%m/%d (%a)")
-  (setq org-journal-time-prefix "* TODO ")
+  (setq org-journal-date-prefix "* ")
+  (setq org-journal-date-format "%m/%d (%a)")
+  (setq org-journal-time-prefix "** TODO ")
+  (setq org-journal-time-format "%H:%M")
   (setq org-journal-file-header "#+STARTUP: indent\n#+STARTUP: showall\n#+STARTUP: nolineimages\n#+STARTUP: hidestars"))
 
 ;; req-3.3 (docs/requirements/req-3_org-notes.org)
