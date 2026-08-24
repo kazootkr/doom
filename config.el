@@ -39,13 +39,15 @@
 (setq doom-font (font-spec :family "JetBrains Mono" :size 15))
 (setq-default line-spacing 0.2)
 
-;; req-1.3: 地の文の可変ピッチフォント。日本語が崩れないよう Hiragino を使う
-(setq doom-variable-pitch-font (font-spec :family "Hiragino Kaku Gothic ProN" :size 15))
-
 ;; macOS（NS port）固有の外観設定。Linux など対象外環境ではブロックごと no-op。
 (when (and (eq system-type 'darwin) (featurep 'ns))
   ;; req-1.2: 文字を anti-aliasing 表示する
   (setq ns-antialias-text t)
+
+  ;; req-1.3: 地の文の可変ピッチフォント。日本語が崩れないよう Hiragino を使う。
+  ;; Hiragino は macOS 専用のため、対象外環境（Linux/docker）で doom のフォント適用が user-error に
+  ;; ならないよう darwin/NS ガード内に置く（fix-2）。
+  (setq doom-variable-pitch-font (font-spec :family "Hiragino Kaku Gothic ProN" :size 15))
 
   ;; req-1.3: default フォントセットに Hiragino 系の日本語フォントを割り当てる。
   ;; after-setting-font-hook の後段で再適用することで、:ui unicode (unicode-fonts)
@@ -229,6 +231,14 @@
 (set-docsets! '(ruby-mode ruby-ts-mode) "Ruby"
   ["ruby_on_rails_guides_ja" (eq major-mode 'ruby-mode)]
   ["Emacs_Lisp" (eq major-mode 'emacs-lisp-mode)])
+
+;; fix-1 (docs/tasks/task-1_appearance.org)
+;; doom-solarized-dark-high-contrast は region と org-block 系 face の双方に base0 (#01323d) を割り当てる
+;; ため、src ブロック内の選択範囲が視認できない。org-block 系の背景をテーマの base3 (#13383C) にして
+;; region と分離する。custom-set-faces! はテーマロード後に再適用されるので適用順の考慮は不要。
+(custom-set-faces!
+  `((org-block org-block-begin-line org-block-end-line)
+    :background ,(doom-color 'base3)))
 
 
 ;; 非アクティブ時に 85% へ落とす(数字を下げるほど目立つ)

@@ -196,10 +196,10 @@ fix-1 の docker 検証中に次の不具合が判明した:
 - [X] =doom-theme= が =doom-solarized-dark-high-contrast= になっている（docker batch で適用確認）
 - [X] =init.el= で =ligatures= / =unicode= / =indent-guides= / =nav-flash= / =(emoji +unicode)= /
   =(smooth-scroll +interpolate)= が有効化され、=doom sync= がエラーなく完了する（=./docker/run.sh batch=）
-- [ ] 対象外環境（Linux / docker）で darwin/NS ガード内の macOS 固有設定が no-op となり、エラーにならない
-- [ ] fix-1: docker で =org-block= / =org-block-begin-line= / =org-block-end-line= の背景が =#13383C= になり、
+- [X] 対象外環境（Linux / docker）で darwin/NS ガード内の macOS 固有設定が no-op となり、エラーにならない
+- [X] fix-1: docker で =org-block= / =org-block-begin-line= / =org-block-end-line= の背景が =#13383C= になり、
   =region= の =#01323d= と異なる（=./docker/run.sh screenshot= と face の実測）
-- [ ] fix-2: docker（Linux）の GUI 起動で =Could not find a font on your system= が出ず、テーマが適用される
+- [X] fix-2: docker（Linux）の GUI 起動で =Could not find a font on your system= が出ず、テーマが適用される
 - [ ] macOS の GUI Emacs を再起動し、以下をユーザーが確認する
   - [X] =doom-font= が JetBrains Mono・サイズ 15 で表示される（=M-x describe-font= または目視）
   - [X] 行間が既定より広く、行の高さが約 1.2 倍になっている
