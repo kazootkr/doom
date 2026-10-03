@@ -230,10 +230,14 @@
   ["ruby_on_rails_guides_ja" (eq major-mode 'ruby-mode)]
   ["Emacs_Lisp" (eq major-mode 'emacs-lisp-mode)])
 
-;; doom-solarized-dark-high-contrast は region と org-block 系 face の双方に base0 (#01323d) を割り当てる
-;; ため、src ブロック内の選択範囲が視認できない。org-block 系の背景をテーマの base3 (#13383C) にして
-;; region と分離する。custom-set-faces! はテーマロード後に再適用されるので適用順の考慮は不要。
+;; doom-solarized-dark-high-contrast は region を base0 (#01323d) にしており、地 (bg #002732) や現在行
+;; (hl-line。solaire-mode により bg-alt #00212B か bg) とほぼ同じ暗さのため、選択範囲と現在行を見分け
+;; られない。region はテーマの blue を地に 25% 混ぜた青み (#0f435d) にして区別する。
+;; また同テーマは org-block 系 face も既定で base0 にするため、src ブロック内の選択範囲が埋もれないよう
+;; org-block 系の背景は base3 (#13383C) にする。
+;; custom-set-faces! はテーマロード後に再適用されるので適用順の考慮は不要。
 (custom-set-faces!
+  `(region :background ,(doom-blend 'blue 'bg 0.25))
   `((org-block org-block-begin-line org-block-end-line)
     :background ,(doom-color 'base3)))
 

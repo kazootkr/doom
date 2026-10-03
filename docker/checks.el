@@ -58,6 +58,17 @@
   (require 'diff-hl)
   (should-not diff-hl-update-async))
 
+(ert-deftest checks/region-background-distinct ()
+  "テーマのロード後も、選択範囲の背景が地・現在行・org の src ブロックと異なる色になっている。"
+  ;; batch ではテーマ自体の face が GUI 向けの表示条件で当たらず、条件なしの custom-set-faces! の
+  ;; 上書きだけが値を持つ。そのため地・現在行の色はテーマのパレットから引いて比べる
+  (load-theme doom-theme t)
+  (require 'org)
+  (let ((region (face-background 'region nil t)))
+    (should region)
+    (should-not (member region (list (doom-color 'bg) (doom-color 'bg-alt) (doom-color 'base0)
+                                     (face-background 'org-block nil t))))))
+
 (ert-deftest checks/macos-settings-noop-elsewhere ()
   "darwin/NS ガード内の設定が対象外環境では評価されない。"
   (skip-unless (not (and (eq system-type 'darwin) (featurep 'ns))))
