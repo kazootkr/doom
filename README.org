@@ -17,23 +17,24 @@
 
 * 設定(コード)変更プロセス
 
-spec駆動開発を採用しています。
-下記のスキルを使って3ステップで行います。
+変更のリスクに応じて手順を変えます（判定の目安は [[file:CLAUDE.md][CLAUDE.md]]）。
 
-1. =/create-requirement= — プロンプト → 要求（docs/requirements/）
-2. =/create-task= — 要求 → タスク（docs/tasks/）
-3. =/sync-implementation= — タスク → 実装・検証（完了条件のチェック更新まで）
+- 小（設定値 1 つなど）: 直接実装 → docker 検証 → コミット
+- 中・高: change brief を使い、下記のスキルで進めます。
+  1. =/create-brief= — プロンプト → brief（docs/changes/）
+  2. =/implement-brief= — brief → 実装・docker 検証（docker/checks.el）
+  3. macOS 実機で受け入れ基準を確認
+  4. =/ship-brief= — 残すべき事実をコード・チェック・恒久文書へ移し、brief を削除
 
-要求は「なぜ・何を作るか」、タスクは「どう実装するか」を書きます。
-背景・経緯はこれらの docs/ 配下のファイルを正とします。
+brief は次の変更の差分だけを書く使い捨ての文書です。挙動の正はコードと
+=docker/checks.el=、経緯は git 履歴に置きます。恒久的に残す文書は次の 2 つだけです。
+
+- [[file:docs/macos-checklist.org][docs/macos-checklist.org]] — docker で検証できない macOS 固有の確認項目
+- docs/decisions/ — 調べ直すと高くつく判断の記録（ADR）
 
 ** コミット運用
 
-1ステップ毎にコミットする運用とします。
-
-1. 要求の作成 → コミット
-2. タスク化 → コミット
-3. 実装 → コミット
+各ステップの完了ごとにコミットします（小は実装で 1 回、中・高は brief 作成・実装・出荷で各 1 回）。
 
 コミットは =/git-commit= スキルで行います。差分ファイルすべてを対象に、
 Conventional Commits 形式の subject 1行（本文・フッターなし）でコミットします。
