@@ -30,20 +30,20 @@ write_elisp() {
 # batch モードの Emacs は init を自動ロードしないので、doom の起動列
 # （early-init → モジュール登録 → プロファイル init → doom-startup）を明示的に踏む。
 # early-init.el はコマンドラインから -l で渡す（doom の「universal bootstrapper」）
+# doom-load-packages-incrementally は :defer-incrementally 付きの use-package! が呼ぶが、定義元の
+# doom-start.el は対話起動でしか読まれない。未定義のままだと org 等の use-package! が途中で
+# エラーになりモジュール設定が走らないため、何もしない関数で補う（パッケージは require 時に読まれる）
 DOOM_BATCH_BOOT='(progn
+  (unless (fboundp (quote doom-load-packages-incrementally))
+    (defun doom-load-packages-incrementally (&rest _)))
   (doom-modules-initialize)
   (load (doom-profile-init-file doom-profile))
   (doom-startup))'
 
 # batch では doom が CLI コンテキストの buffer に message 出力を吸い込むため、
 # 検証式の出力には message ではなく princ を使うこと
-DEFAULT_BATCH_CHECK='(progn
-  (princ "=== VERIFY ===\n")
-  (princ (format "doom: %s / evil: %s / config.el org-directory: %s\n"
-                 doom-version (featurep (quote evil)) (bound-and-true-p org-directory)))
-  (princ (format "C-u (motion state): %s\n"
-                 (and (boundp (quote evil-motion-state-map))
-                      (lookup-key evil-motion-state-map (kbd "C-u"))))))'
+# 標準チェックは $DOOMDIR/docker/checks.el の全テスト（失敗があれば終了コード 1）
+DEFAULT_BATCH_CHECK="(load \"$DOOMDIR/docker/checks.el\" nil t)"
 
 DEFAULT_SCREENSHOT_SETUP='(progn
   (switch-to-buffer "*日本語検証*")

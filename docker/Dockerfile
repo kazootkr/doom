@@ -39,13 +39,23 @@ RUN mkdir -p /usr/local/share/fonts/nerd \
     && fc-cache -f
 
 # doomemacs 本体とモジュール群（v3 構成ではモジュールが別リポジトリで、
-# sources/doom+ に配置される）。検証対象の設定（このリポジトリ）はランタイムに
+# sources/doom+ に配置される）。開発中の最新を取るとホストと挙動がずれ、検証結果が
+# 当てにならないため、run.sh build がホストの ~/.config/emacs と sources/doom+ の HEAD を
+# 渡し、同じコミットに固定する。検証対象の設定（このリポジトリ）はランタイムに
 # DOOMDIR としてマウントし、パッケージ類（.local）は named volume に置く
+ARG DOOM_CORE_REF
+ARG DOOM_MODULES_REF
+LABEL doom.core="${DOOM_CORE_REF}" doom.modules="${DOOM_MODULES_REF}"
 ENV EMACSDIR=/root/.config/emacs \
     DOOMDIR=/workspace/doom \
     PATH=/root/.config/emacs/bin:$PATH
-RUN git clone --depth 1 https://github.com/doomemacs/doomemacs "$EMACSDIR" \
-    && git clone --depth 1 https://github.com/doomemacs/modules "$EMACSDIR/sources/doom+"
+RUN fetch_ref() { \
+        git init -q "$2" && git -C "$2" remote add origin "$1" \
+        && git -C "$2" fetch -q --depth 1 origin "$3" \
+        && git -C "$2" checkout -q FETCH_HEAD; \
+    } \
+    && fetch_ref https://github.com/doomemacs/doomemacs "$EMACSDIR" "${DOOM_CORE_REF:?run.sh build で指定する}" \
+    && fetch_ref https://github.com/doomemacs/modules "$EMACSDIR/sources/doom+" "${DOOM_MODULES_REF:?run.sh build で指定する}"
 
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
