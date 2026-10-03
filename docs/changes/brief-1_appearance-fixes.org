@@ -1,0 +1,36 @@
+#+title: brief-1_appearance-fixes
+#+STARTUP: indent
+#+STARTUP: showall
+#+STARTUP: nolineimages
+#+STARTUP: hidestars
+
+リスク: 中 — 外観の不具合修正 2 件。実装済みで、macOS 実機の確認待ち
+
+* 意図と非目標
+
+- org の src ブロック内でも、選択範囲（region）が背景色で判別できること。
+- macOS 専用フォント（Hiragino）の指定が、対象外環境（Linux/docker）の GUI 起動を止めないこと。
+
+やらないこと:
+
+- テーマの変更、region 側の色の変更
+
+* 決めてほしいこと
+
+なし
+
+* 影響範囲
+
+- config.el: org-block 系 face の =custom-set-faces!=、darwin/NS ガード内の =doom-variable-pitch-font=
+- =doom sync= 不要
+
+* 現状と異なる制約
+
+- org-block 系の背景色はテーマのパレット（=doom-color=）から引き、ハードコードしない。
+
+* 受け入れ基準
+
+- [X] docker: GUI 起動で =Could not find a font on your system= が出ず、テーマが適用される
+- [X] docker: org-block 系 face の背景が region と異なる
+- [ ] macOS: org の src ブロック内で選択範囲が背景色で判別でき、ブロックの輪郭も地の文と区別できる
+- [ ] macOS: org / markdown の地の文が可変ピッチフォントで表示され、日本語が崩れない

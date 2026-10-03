@@ -13,6 +13,11 @@
   - NS port + ns-inline-patch 適用ビルド（macOS/NS 固有設定・IME 連携の前提）
   - 主要ビルドフィーチャー: TREE_SITTER / NATIVE_COMP / SQLITE3 / MODULES / GNUTLS / LIBXML2
 - Doom Emacs: https://github.com/doomemacs/core
+  - docker 検証環境（docker/）はホストの doom と同じコミットでイメージを作る。ホストで doom を
+    更新したら =./docker/run.sh clean && ./docker/run.sh build= で作り直す
+- 言語のランタイム・言語サーバーは mise で管理する。Finder/Dock から起動した GUI Emacs は
+  シェルの =$PATH= を継承しないため、ホストで =doom env= を実行して取り込む（=$PATH= の構成を
+  変えたら再実行する。判断の経緯は [[file:docs/decisions/lsp-client-and-runtime.org][lsp-client-and-runtime]]）
 
 
 * 設定(コード)変更プロセス

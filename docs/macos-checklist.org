@@ -1,0 +1,52 @@
+#+title: macos-checklist
+#+STARTUP: indent
+#+STARTUP: showall
+#+STARTUP: nolineimages
+#+STARTUP: hidestars
+
+docker（Linux）では確かめられない、macOS（NS port + ns-inline-patch）固有の確認項目。
+doom・Emacs・macOS を更新したときや関連する設定を変えたときに、GUI Emacs を再起動して確認する。
+docker で確かめられる項目は [[file:../docker/checks.el][docker/checks.el]] にある。
+
+* 外観
+
+- 主フォントが JetBrains Mono・サイズ 15 で、行の高さが約 1.2 倍になっている
+- JetBrains Mono の合字（=->= / =>== 等）が表示される
+- 文字が anti-aliasing 表示される
+- 日本語（ひらがな・カタカナ・漢字）が Hiragino で表示され、豆腐・中華フォントが出ない（=:ui unicode= 有効下でも）
+- 全角 1 文字が半角 2 文字幅になり、org テーブルの罫線が縦にそろう（ずれたら =face-font-rescale-alist= の係数を調整する）
+- インデントガイドが表示される
+- 大きな移動の後にカーソル行が点滅する
+- 絵文字が描画される
+- スムーススクロール（PgUp/PgDn・=C-d= / =C-u= の補間を含む）が効く
+- 起動時に unicode-fonts の =void-variable= エラーが出たら、unicode-fonts のキャッシュを削除して再起動する
+
+* dired
+
+- dired バッファにファイル種別アイコンが表示される
+- Dirvish の UI（プレビュー等）が動作する
+- コピー/移動/isearch/一覧表示が使える
+
+* org ノート
+
+- =my-dev-notes-dir= が実際のノート用ルートを指し、=org-directory= が同じ値になっている
+- 日誌が =notes/journal/= に保存され、ファイル先頭が指定の =#+STARTUP:= 群になっている
+- =t= / =s= の capture で =notes/Reminder.org= の =■ ToDo= / =■ Scheduled Todo= 見出し配下に ToDo が追記される
+- タグ検索・agenda・TODO 一覧が =notes= 配下（=journal/= の日誌・=Reminder.org= を含むサブディレクトリ以下すべて）の org ファイルを対象にしている
+
+* IME（ns-inline-patch）
+
+- =mac-input-method-mode= が有効で、日本語入力には macOS 標準の日本語 IME が使われる。入力の基底は英数
+- evil ノーマルステートに入ると IME がオフになる
+- =M-x= 等の minibuffer 入力が英数で始まる（「=M-x あ=」にならない）
+- isearch・=+default/search-project=・=org-tags-view=・=org-capture=・=org-ctrl-c-ctrl-c= の入力では日本語を入力できる
+- ノーマル／insert ステートや minibuffer のまま他アプリへ切り替えても、他アプリで日本語入力に切り替えられる（英数に引き戻されない）
+- vc-gutter（diff-hl）使用中にフリーズせず、fringe に diff が表示される
+
+* LSP・言語
+
+- mise 管理の言語サーバーが =$PATH= から見つかる（見つからなければホストで =doom env= を再実行する）
+- Ruby で ruby-lsp が起動し、補完・定義ジャンプ・診断が効く
+- =.tsx= で JSX の補完・定義ジャンプと tree-sitter ハイライトが効く
+- =.swift= で sourcekit-lsp が起動し、補完・診断が効く
+- HTML/CSS/SCSS で補完が効く

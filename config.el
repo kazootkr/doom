@@ -32,26 +32,26 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-;; req-1.4 (docs/requirements/req-1_appearance.org)
 (setq doom-theme 'doom-solarized-dark-high-contrast)
 
-;; req-1.1: 主フォントは JetBrains Mono・サイズ 15、行の高さを約 1.2 倍にする
+;; 主フォントは JetBrains Mono・サイズ 15、行の高さを約 1.2 倍にする。
+;; 未インストールの環境でもフォールバックするだけでエラーにならないため、ガードには入れない。
 (setq doom-font (font-spec :family "JetBrains Mono" :size 15))
 (setq-default line-spacing 0.2)
 
 ;; macOS（NS port）固有の外観設定。Linux など対象外環境ではブロックごと no-op。
 (when (and (eq system-type 'darwin) (featurep 'ns))
-  ;; req-1.2: 文字を anti-aliasing 表示する
+  ;; 文字を anti-aliasing 表示する
   (setq ns-antialias-text t)
 
-  ;; req-1.3: 地の文の可変ピッチフォント。日本語が崩れないよう Hiragino を使う。
+  ;; 地の文の可変ピッチフォント。日本語が崩れないよう Hiragino を使う。
   ;; Hiragino は macOS 専用のため、対象外環境（Linux/docker）で doom のフォント適用が user-error に
-  ;; ならないよう darwin/NS ガード内に置く（fix-2）。
+  ;; なって初期化（テーマ適用を含む）が止まらないよう darwin/NS ガード内に置く。
   (setq doom-variable-pitch-font (font-spec :family "Hiragino Kaku Gothic ProN" :size 15))
 
-  ;; req-1.3: default フォントセットに Hiragino 系の日本語フォントを割り当てる。
-  ;; after-setting-font-hook の後段で再適用することで、:ui unicode (unicode-fonts)
-  ;; による上書きに勝ち、日本語の中華フォント化・豆腐化を防ぐ。
+  ;; default フォントセットに Hiragino 系の日本語フォントを割り当てる。明示しないと CJK 統合により
+  ;; 中国語字形のフォントで描画されたり豆腐（□）になる。after-setting-font-hook の後段で再適用する
+  ;; ことで、:ui unicode (unicode-fonts) による上書きに勝つ。
   (defun +appearance/set-japanese-font ()
     "default フォントセットに Hiragino 系の日本語フォントを割り当てる。"
     (dolist (charset '(japanese-jisx0208 katakana-jisx0201 cp932))
@@ -62,17 +62,17 @@
   (add-hook 'after-setting-font-hook #'+appearance/set-japanese-font)
   (+appearance/set-japanese-font)
 
-  ;; req-1.3: 全角日本語の表示幅を半角英数の整数倍（2 倍）にそろえる。
+  ;; 全角日本語の表示幅を半角英数の整数倍（2 倍）にそろえる。
   ;; 係数は org テーブルの罫線が縦にそろうまで macOS 実機で調整する。
   (add-to-list 'face-font-rescale-alist '(".*Hiragino.*" . 1.0)))
 
-;; req-4.1〜4.4 (docs/requirements/req-4_ns-inline-patch.org)
-;; ns-inline-patch（NS port の IME 連携パッチ）適用ビルド向けの IME 制御。
-;; mac-* 関数はパッチ適用ビルドのみが提供するため、未適用ビルド・対象外環境（Linux/docker）では
-;; fboundp ガードでブロックごと no-op になる。
+;; ns-inline-patch（NS port の IME 連携パッチ）適用ビルド向けの IME 制御。編集・コマンド入力の
+;; 基底を英数にし、日本語が要る場面でだけ IME を使えるようにする。doom の :os macos / :input に
+;; 相当する機能が無いため自前で組む。mac-* 関数はパッチ適用ビルドのみが提供するため、未適用ビルド・
+;; 対象外環境（Linux/docker）では fboundp ガードでブロックごと no-op になる。
 (when (and (eq system-type 'darwin) (featurep 'ns)
            (fboundp 'mac-input-method-mode))
-  ;; req-4.1: 既定入力ソースを macOS 標準の日本語 IME (Kotoeri) にし、IME 連携を有効化する。
+  ;; 既定入力ソースを macOS 標準の日本語 IME (Kotoeri) にし、IME 連携を有効化する。
   ;; 基底は英数（IME オフ）。入力ソース ID は macOS バージョンで変わりうるので、実機の
   ;; (mac-ime-input-source-list) で確認し、異なればこの 1 か所を合わせる。
   (when (fboundp 'mac-get-current-input-source)
@@ -81,24 +81,24 @@
   (unless noninteractive
     (mac-input-method-mode 1))
 
-  ;; req-4.2: evil ノーマルステートに入ったら IME を自動オフにする（コマンドキーの誤爆防止）。
+  ;; evil ノーマルステートに入ったら IME を自動オフにする（コマンドキーの誤爆防止）。
   (add-hook 'evil-normal-state-entry-hook #'mac-ime-deactivate)
 
-  ;; req-4.4: これらのコマンドに伴う minibuffer 入力では IME を自動オフにしない（日本語入力を許可）。
-  ;; isearch 系は minibuffer-setup-hook を経由しないため列挙せず、「オフのフックを足さない」ことで
-  ;; 日本語入力可のままにする。
+  ;; ファイル内容の検索・org タグ・ToDo には日本語を使うため、これらのコマンドに伴う minibuffer 入力
+  ;; では IME を自動オフにしない。isearch 系は minibuffer-setup-hook を経由しないため列挙せず、
+  ;; 「オフのフックを足さない」ことで日本語入力可のままにする。
   (defvar +ime-minibuffer-japanese-commands
     '(+default/search-project org-tags-view org-capture org-ctrl-c-ctrl-c)
     "minibuffer 入力で IME を自動オフにしないコマンド。")
 
-  ;; req-4.3: minibuffer 読み取り開始時、例外コマンド以外では IME をオフにする（「M-x あ」対策）。
+  ;; minibuffer 読み取り開始時、上の例外コマンド以外では IME をオフにする（「M-x あ」対策）。
   (defun +ime/minibuffer-setup ()
     "例外コマンド以外の minibuffer 読み取りで IME をオフにする。"
     (unless (memq this-command +ime-minibuffer-japanese-commands)
       (mac-ime-deactivate)))
   (add-hook 'minibuffer-setup-hook #'+ime/minibuffer-setup)
 
-  ;; fix-1: アプリスイッチ時に IME 状態を他アプリへ引きずらせない（task-4 fix-1）。
+  ;; アプリスイッチ時に IME 状態を他アプリへ引きずらせない。
   ;; mac-input-method-mode はフォーカス変化・buffer-list-update に IME 状態を同期し、内部で
   ;; mac-toggle-input-source（TISSelectInputSource）を呼んでシステム全体の入力ソースを書き換える。
   ;; Emacs が非フォーカスの間も同期が走り前面アプリの入力ソースを Emacs の状態（英数）に引き戻すため、
@@ -115,7 +115,6 @@
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-;; req-3.1 (docs/requirements/req-3_org-notes.org)
 ;; メモ・日誌・ToDo を置くノート用ルートディレクトリ。journal の保存先・capture の出力先・
 ;; agenda の対象は、すべてこの 1 つの定義を参照する。実環境に合わせてここを変える。
 ;; 末尾の "/" は capture の (concat my-dev-notes-dir "Reminder.org") のため必須。
@@ -124,7 +123,7 @@
 
 ;; org-directory を notes ルートに合わせる（org ロード前に設定する必要がある）。
 ;; これにより :lang (org +journal) は org-journal-dir を {notes}/journal/ に既定設定し、
-;; req-3.2 の保存先（notes/journal/）が自動でそろう。
+;; 日誌の保存先（notes/journal/）が自動でそろう。
 (setq org-directory my-dev-notes-dir)
 
 
@@ -159,16 +158,14 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
-;; req-2.1 (docs/requirements/req-2_dired.org)
 ;; dired は遅延ロードされ、doom の :config が dired-listing-switches を上書きするため、
-;; after! でモジュール設定の後に適用して要求値を確実に効かせる。
+;; after! でモジュール設定の後に適用して確実に効かせる。
 (after! dired
   (setq dired-dwim-target t)
   (setq dired-recursive-copies 'always)
   (setq dired-isearch-filenames t)
   (setq dired-listing-switches "-AFlh"))
 
-;; req-3.2 (docs/requirements/req-3_org-notes.org)
 ;; org-journal の書式設定。保存先 org-journal-dir は doom (+journal) が org-directory 配下の
 ;; "journal/" に設定するため、ここでは書式のみ指定する。
 (after! org-journal
@@ -180,8 +177,8 @@
   (setq org-journal-time-format "%H:%M")
   (setq org-journal-file-header "#+STARTUP: indent\n#+STARTUP: showall\n#+STARTUP: nolineimages\n#+STARTUP: hidestars"))
 
-;; req-3.3 (docs/requirements/req-3_org-notes.org)
-;; タグ検索・agenda・TODO 一覧の対象を notes 配下の org 全体にする。
+;; タグ検索・agenda・TODO 一覧の対象を notes 配下の org 全体にする。doom 既定の
+;; (list org-directory) はサブディレクトリを辿らないため、明示的に列挙する。
 ;; notes ルートと全サブディレクトリを列挙（各ディレクトリは agenda 構築時に *.org 再走査）。
 ;; notes が無い環境では directory-files-recursively がエラーになるためガードして no-op にする。
 (when (file-directory-p my-dev-notes-dir)
@@ -190,8 +187,7 @@
               (seq-filter #'file-directory-p
                           (directory-files-recursively my-dev-notes-dir "" t)))))
 
-;; req-3.4 (docs/requirements/req-3_org-notes.org)
-;; org-capture で ToDo を notes/Reminder.org に書き留める。
+;; org-capture で ToDo を notes/Reminder.org に書き留める（doom 既定のテンプレートを差し替える）。
 (after! org-capture
   (setq org-capture-templates
         `(("t" "Todo" entry
@@ -201,22 +197,23 @@
            (file+headline ,(concat my-dev-notes-dir "Reminder.org") "■ Scheduled Todo")
            "* TODO %? # SCHEDULED: %^t"))))
 
-;; req-3.5 (docs/requirements/req-3_org-notes.org)
 ;; TODO 状態を実際に使う 5 つに絞る。doom の :lang org が :config で org-todo-keywords に
-;; 16 状態（3 本の sequence）を設定するため、after! でその後に適用して要求値を勝たせる。
+;; 16 状態（3 本の sequence）を設定するため、after! でその後に適用して上書きする。
 ;; 既存ノートで使用中の TODO / DONE / STRT は必ず残す（外すと既存見出しが素のテキストに落ちる）。
 (after! org
   (setq org-todo-keywords
         '((sequence "TODO(t)" "STRT(s)" "WAIT(w)" "|" "DONE(d)" "KILL(k)"))))
 
-;; req-4.5 (docs/requirements/req-4_ns-inline-patch.org)
 ;; doom の :ui vc-gutter は Emacs 30 系で diff-hl-update-async を 'thread にする。macOS NS port +
 ;; Emacs 30 + スレッド非同期更新で diff-hl がフリーズする (dgutov/diff-hl#230) ため、非同期更新を
 ;; 無効化する。doom が diff-hl の :config で設定するため after! で上書きする（fringe 表示は維持）。
+;; dgutov/diff-hl#230 が解消されたら外してよい。
 (after! diff-hl
   (setq diff-hl-update-async nil))
 
-;; req-6.3 (docs/requirements/req-6_docset-lookup.org)
+;; docset は Dash.app に依存せず Emacs だけで取得・閲覧する。:tools (lookup +docsets) の既定
+;; （格納先 doom-profile-data-dir/docsets/、閲覧は eww）がこの方針に合うので上書きしない。
+;; macOS 非依存なので darwin ガードにも入れない。
 ;; dash-docs 系コマンドを SPC d 配下に集約（dash-docs / consult-dash は lookup +docsets で導入）。
 (map! :leader
       (:prefix ("d" . "dash")
@@ -227,14 +224,12 @@
        :desc "Activate docset"        "a" #'dash-docs-activate-docset
        :desc "Deactivate docset"      "A" #'dash-docs-deactivate-docset))
 
-;; req-6.2 (docs/requirements/req-6_docset-lookup.org)
 ;; Ruby バッファで K / +lookup/in-docsets が "Ruby" docset を検索するよう紐付け。
 ;; docset 名は dash-docs-install-docset で取得した名称に一致させる。
 (set-docsets! '(ruby-mode ruby-ts-mode) "Ruby"
   ["ruby_on_rails_guides_ja" (eq major-mode 'ruby-mode)]
   ["Emacs_Lisp" (eq major-mode 'emacs-lisp-mode)])
 
-;; fix-1 (docs/tasks/task-1_appearance.org)
 ;; doom-solarized-dark-high-contrast は region と org-block 系 face の双方に base0 (#01323d) を割り当てる
 ;; ため、src ブロック内の選択範囲が視認できない。org-block 系の背景をテーマの base3 (#13383C) にして
 ;; region と分離する。custom-set-faces! はテーマロード後に再適用されるので適用順の考慮は不要。

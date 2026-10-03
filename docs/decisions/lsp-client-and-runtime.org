@@ -1,0 +1,24 @@
+#+title: lsp-client-and-runtime
+#+STARTUP: indent
+#+STARTUP: showall
+#+STARTUP: nolineimages
+#+STARTUP: hidestars
+
+* 決定
+
+- LSP クライアントは lsp-mode（=:tools lsp= をフラグなし）にする。=+peek= は付けない。
+- Ruby/Node のランタイムと言語サーバーは mise で管理し、doom の =+rbenv= / =+rvm= / =+chruby= は使わない。
+- Finder/Dock から起動した GUI Emacs に mise の =$PATH= を渡す手段は =doom env=（envvar ファイル）にする。
+
+* 理由
+
+- lsp-mode はユーザーの選択。=+peek= を付けないのは、=gd= 等の lookup を標準のジャンプ動作のまま保つため（必要になれば =(lsp +peek)= に変えられる）。
+- バージョン管理は mise に一本化しているため、doom 側のバージョンマネージャ連携は要らない。
+- GUI Emacs はシェルの =$PATH= を継承せず、mise の shims 配下のバイナリを見つけられない。
+  =doom env= は doom 公式の方式で、config.el にコードを足さずに済む。
+
+* 採らなかった案
+
+- =(lsp +eglot)= — lsp-mode を使うため。
+- =exec-path-from-shell= 系の手当て、mise shims を =exec-path= に足す設定、起動方法の指定 —
+  =doom env= なら doom 公式の方式で config.el にコードが要らないため。

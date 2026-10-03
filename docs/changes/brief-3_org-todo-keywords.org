@@ -1,0 +1,36 @@
+#+title: brief-3_org-todo-keywords
+#+STARTUP: indent
+#+STARTUP: showall
+#+STARTUP: nolineimages
+#+STARTUP: hidestars
+
+リスク: 中 — doom 既定（16 状態）を =after!= で上書きする。実装済みで、macOS 実機の確認待ち
+
+* 意図と非目標
+
+org の TODO 状態を、実際に使う 5 つ（未完了 =TODO= / =STRT= / =WAIT=、完了 =DONE= / =KILL=）に絞る。
+既存ノートで使っている =TODO= / =DONE= / =STRT= は、引き続き TODO 状態として認識されること。
+
+やらないこと:
+
+- =org-todo-keyword-faces= の変更
+- 既存ノートの書き換え
+
+* 決めてほしいこと
+
+なし
+
+* 影響範囲
+
+- config.el: =after! org= の =org-todo-keywords=
+- =doom sync= 不要
+
+* 現状と異なる制約
+
+- doom の =:lang org= が =:config= で既定値を設定するため、=after! org= で上書きする。
+
+* 受け入れ基準
+
+- [X] docker: org ロード後の =org-todo-keywords= が 5 状態の 1 本の =sequence= だけになる
+- [ ] macOS: 状態選択（=SPC m t= / =C-c C-t=）の候補が 5 つだけになる
+- [ ] macOS: 既存ノートの =TODO= / =DONE= / =STRT= 見出しが色付きで TODO 状態として認識され、agenda・TODO 一覧に載る

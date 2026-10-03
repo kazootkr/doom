@@ -1,0 +1,43 @@
+#+title: brief-6_docset-lookup
+#+STARTUP: indent
+#+STARTUP: showall
+#+STARTUP: nolineimages
+#+STARTUP: hidestars
+
+リスク: 中 — init.el のフラグ追加と、キー割当・mode 紐付け。実装済みで、確認待ち
+
+* 意図と非目標
+
+Dash.app に依存せず、Emacs だけで docset の取得から =eww= での閲覧までを完結させる。
+よく使う操作（検索・閲覧・docset の取得/有効化/無効化）は =SPC d= 配下に集める。
+
+やらないこと:
+
+- Dash.app の docset ディレクトリの共有
+- doom 既定（格納先 =doom-profile-data-dir/docsets/=、閲覧 =eww=）の上書き
+
+* 決めてほしいこと
+
+- =set-docsets!= の条件付き docset 2 つが、意図どおりに有効にならないと考えられる。
+  - ="Emacs_Lisp"= は ruby 系 mode に登録されているのに、条件が =(eq major-mode 'emacs-lisp-mode)= なので、
+    どのバッファでも有効にならない。推奨: =emacs-lisp-mode= に別の =set-docsets!= で登録する。
+  - ="ruby_on_rails_guides_ja"= は条件が =(eq major-mode 'ruby-mode)= なので、=+tree-sitter= で
+    =ruby-ts-mode= になるバッファでは有効にならない。推奨: 条件を外し、ruby 系の両 mode で有効にする。
+
+* 影響範囲
+
+- init.el: =:tools (lookup +docsets)=（=doom sync= 必要。適用済み）
+- config.el: =map! :leader= の =SPC d=、=set-docsets!=
+
+* 現状と異なる制約
+
+- macOS 非依存なので darwin ガードに入れない。
+
+* 受け入れ基準
+
+- [X] docker: =SPC d= 配下の 6 キー（=d= / =f= / =k= / =i= / =a= / =A=）が対応コマンドに束縛される
+- [X] docker: =ruby-mode= バッファの =dash-docs-docsets= に "Ruby" が含まれる
+- [ ] macOS: =SPC d d= / =SPC d f= で取得済み docset を検索し、=eww= で閲覧できる
+- [ ] macOS: =SPC d= が which-key に "dash" グループとして表示され、各コマンドが起動する
+- [ ] macOS: Ruby バッファで =K= が "Ruby" docset を検索する
+- [ ] macOS: 既存のキーバインド・lookup の挙動が退行しない
