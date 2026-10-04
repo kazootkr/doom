@@ -1,0 +1,36 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/Users/kazootkr/.config/doom/.codex/hooks/block-host-emacs.sh'"
+          }
+        ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/kazootkr/.config/doom/.codex/hooks/gitleaks-guard.sh'",
+            "timeout": 60
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/Users/kazootkr/.config/doom/.codex/hooks/doom-sync-reminder.sh'"
+          }
+        ]
+      }
+    ]
+  }
+}

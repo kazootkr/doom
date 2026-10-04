@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 Doom Emacs の個人設定（DOOMDIR）。実行環境は [README.org](README.org) の「実行環境」を参照。
 
