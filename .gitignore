@@ -4,3 +4,7 @@
 *.elc
 
 docker/out/
+
+# ローカルの IDE 設定・ビルドキャッシュ
+.idea/
+.build/
