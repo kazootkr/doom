@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# CLAUDE.md ルール: init.el / packages.el を変更したら doom sync が必要。
+# AGENTS.md ルール: init.el / packages.el を変更したら doom sync が必要。
 # 編集後に PostToolUse の additionalContext でリマインドを注入する
 # （実行はユーザー依頼方針のため通知のみ。ブロックはしない）。
 set -euo pipefail

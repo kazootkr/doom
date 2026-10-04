@@ -9,7 +9,7 @@ allowed-tools: Bash(git add:*) Bash(git commit:*) Bash(git status:*)
 リポジトリの差分をすべてステージし、Conventional Commits 形式の subject 1行で
 コミットする。
 
-このリポジトリは **1ステップ毎にコミットする運用**（CLAUDE.md のリスク段階）:
+このリポジトリは **1ステップ毎にコミットする運用**（AGENTS.md のリスク段階）:
 
 - 小: 直接実装 → コミット
 - 中・高:
@@ -50,7 +50,7 @@ allowed-tools: Bash(git add:*) Bash(git commit:*) Bash(git status:*)
 | 小リスクの直接実装 | `feat(ui): 非アクティブフレームを半透明にする` |
 | init.el / packages.el のモジュール・パッケージ変更 | `feat(modules): vterm と yaml を有効化` |
 | docker 検証環境・チェック | `test(docker): xxx の回帰チェックを追加` / `chore(docker): 検証イメージを更新` |
-| スキル・CLAUDE.md の整備 | `docs(claude): リスク段階の目安を更新` |
+| スキル・AGENTS.md の整備 | `docs(claude): リスク段階の目安を更新` |
 
 受け入れ基準のチェックボックス更新だけの差分も実装ステップの一部としてよい
 （例: `docs(brief): brief-7 の受け入れ基準を更新`）。

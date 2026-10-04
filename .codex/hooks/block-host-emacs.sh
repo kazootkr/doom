@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# CLAUDE.md ルール: ホストで GUI Emacs を起動しない。
+# AGENTS.md ルール: ホストで GUI Emacs を起動しない。
 # 設定の動作確認は ./docker/run.sh（隔離 Linux コンテナ）で行う。
 # Bash コマンドの各セグメントの先頭プログラムが emacs/Emacs
 # （--batch/--version/--help を除く）なら PreToolUse で deny する。
 set -euo pipefail
 
 deny() {
-  printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"ホストでの GUI Emacs 起動は CLAUDE.md で禁止です。設定の動作確認は ./docker/run.sh batch / screenshot を使ってください。"}}'
+  printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"ホストでの GUI Emacs 起動は AGENTS.md で禁止です。設定の動作確認は ./docker/run.sh batch / screenshot を使ってください。"}}'
   exit 0
 }
 
