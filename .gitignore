@@ -6,3 +6,11 @@
 tmp/
 
 /workspace/
+
+# Swift Package Manager のキャッシュ
+/.build/
+
+# vm/run.sh のスクリーンショット出力（.gitkeep だけ追跡）
+/vm/out/**
+!/vm/out/**/
+!/vm/out/**/.gitkeep
