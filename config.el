@@ -73,3 +73,41 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
+
+
+;;; macOS の日本語入力（ns-inline-patch）
+;; mac-* の関数はパッチを当てた NS 版 Emacs にだけある（--batch でも定義されている）
+(when (and (featurep 'ns) (fboundp 'mac-input-method-mode))
+  ;; IME オンで切り替える入力ソース（自動検出に失敗したとき用に明示する）
+  (setq mac-default-input-source "com.apple.inputmethod.Kotoeri.RomajiTyping.Japanese")
+
+  ;; 入力ソースの切り替えは Emacs が前面のときだけにする。パッチは、別アプリで入力ソースを変えたとき
+  ;; （OS の通知。Emacs が前面でなくても届く）、フォーカスを失ったとき、バッファ一覧が変わったときにも
+  ;; 切り替えうるので、そのままだと前面の別アプリの入力ソースが変わる。
+  ;; 起動直後（まだフォーカスを得ていない間）も止まる。そのときの状態は、Emacs が前面になって
+  ;; フォーカスを得たときに、パッチが合わせ直す
+  (defun +ime/toggle-input-source-when-focused (fn &rest args)
+    "Emacs のフレームがフォーカスを得ていると分かっているときだけ FN（`mac-toggle-input-source'）を呼ぶ。
+起動直後の、まだフォーカスを得ていない間も呼ばない。"
+    (when (eq (frame-focus-state) t)
+      (apply fn args)))
+  (advice-add 'mac-toggle-input-source :around #'+ime/toggle-input-source-when-focused)
+
+  ;; インサートに入ると、そのバッファで抜けたときの IME の状態に戻す（evil がバッファごとに覚える）。
+  ;; evil は、ノーマルなどで IME がオンにされると（かな キー、別アプリから戻ったときの合わせ直し）、
+  ;; 覚えている状態を「日本語」に書き換えてからオフにする。その書き換えだけを元に戻す
+  (defun +ime/keep-insert-record (fn)
+    "ノーマルなどのステートでは、evil がインサート用の記録（`evil-input-method'）を書き換えないようにする。"
+    (if (and (bound-and-true-p evil-local-mode) evil-state
+             (not (evil-state-property evil-state :input-method)))
+        (let ((saved evil-input-method))
+          (unwind-protect (funcall fn)
+            (setq evil-input-method saved)))
+      (funcall fn)))
+  (advice-add 'evil-activate-input-method :around #'+ime/keep-insert-record)
+
+  ;; 入力ソースに触る処理（モードの有効化）は GUI のときだけ。batch・-nw では有効にしない。
+  ;; パッチの C 関数は入力ソース API の戻り値を確かめないので、GUI のログインセッションが
+  ;; ない環境で動くと落ちるおそれがある
+  (when (display-graphic-p)
+    (mac-input-method-mode 1)))

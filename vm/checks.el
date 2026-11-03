@@ -93,12 +93,11 @@
   (should (equal mac-default-input-source
                  "com.apple.inputmethod.Kotoeri.RomajiTyping.Japanese")))
 
-(ert-deftest checks/macos-ime-hooks ()
-  "ノーマルステートと minibuffer で IME をオフにするフックが登録されている。"
+(ert-deftest checks/macos-ime-mode-gui-only ()
+  "batch では IME 連携を有効にしない（入力ソースに触らない）。
+ノーマルステート・ミニバッファの IME は evil とパッチの仕組みに任せ、./vm/run.sh ime で確かめる。"
   (skip-unless (checks--macos-ns-p))
-  (require 'evil)
-  (should (memq #'mac-ime-deactivate evil-normal-state-entry-hook))
-  (should (memq #'+ime/minibuffer-setup minibuffer-setup-hook)))
+  (should-not (bound-and-true-p mac-input-method-mode)))
 
 (ert-deftest checks/macos-ime-toggle-advice ()
   "入力ソースの切り替えが、Emacs が前面のときだけに限られている。"
