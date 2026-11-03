@@ -1,0 +1,15 @@
+#+TITLE: README
+#+STARTUP: indent
+#+STARTUP: showall
+#+STARTUP: noinlineimages
+#+STARTUP: hidestars
+
+これはDoom Emacs用の個人設定ファイルです。
+
+* 実行環境
+
+- macOS 27 (Apple Silicon)
+- GNU Emacs 31.1 (ビルドスクリプト: https://github.com/kazootkr/emacs-build)
+  - NS port + ns-inline-patch 適用ビルド（macOS/NS 固有設定・IME 連携の前提）
+  - 主要ビルドフィーチャー: TREE_SITTER / NATIVE_COMP / SQLITE3 / MODULES / GNUTLS / LIBXML2
+- Doom Emacs: https://github.com/doomemacs/core
