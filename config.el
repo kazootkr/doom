@@ -142,6 +142,9 @@
   (setq org-journal-date-format "%m/%d (%a)")
   (setq org-journal-time-prefix "** TODO ")
   (setq org-journal-time-format "%H:%M")
+  ;; 未完了の TODO を翌日へ移す carryover を無効にし、エントリーを書いた日付の下に残す。
+  ;; 未完了の一覧は org-agenda の TODO 一覧で見る。doom (+journal) が設定する値を上書きする。
+  (setq org-journal-carryover-items "")
   (setq org-journal-file-header "#+STARTUP: indent\n#+STARTUP: showall\n#+STARTUP: nolineimages\n#+STARTUP: hidestars"))
 
 ;; タグ検索・agenda・TODO 一覧の対象を notes 配下の org 全体にする。doom 既定の
@@ -153,6 +156,27 @@
         (cons (directory-file-name my-dev-notes-dir)
               (seq-filter #'file-directory-p
                           (directory-files-recursively my-dev-notes-dir "" t)))))
+
+;; TODO 一覧（SPC n t）の左の列は既定ではカテゴリー（日誌ではファイル名）を出す。日誌の
+;; エントリーでは代わりに、書いた日付の見出し（例: 11/09 (Mon)）を出す。
+(defun +org-agenda-category-or-journal-date ()
+  "日誌のエントリーなら属する日付の見出しを、それ以外ならカテゴリーを「:」付きで返す。"
+  (concat (or (and buffer-file-name
+                   (bound-and-true-p org-journal-dir)
+                   (file-in-directory-p buffer-file-name
+                                        (expand-file-name org-journal-dir org-directory))
+                   (car (org-get-outline-path)))
+              (org-get-category))
+          ":"))
+
+(after! org-agenda
+  ;; todo 以外は org の既定値のまま。
+  (setq org-agenda-prefix-format
+        '((agenda . " %i %-12:c%?-12t% s")
+          ;; 日付の見出し＋「:」で 12 文字になるため、隙間を空けるよう 13 桁にする。
+          (todo   . " %i %-13(+org-agenda-category-or-journal-date)")
+          (tags   . " %i %-12:c")
+          (search . " %i %-12:c"))))
 
 ;; org-capture で ToDo を notes/Reminder.org に書き留める（doom 既定のテンプレートを差し替える）。
 (after! org-capture
