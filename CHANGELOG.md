@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2026-11-15
+- org-agenda-files から `.git` などの隠しディレクトリを除き、列挙を起動時から org のロード時に遅らせる
+- TODO 一覧で日付の見出しを出す対象を、org-journal-mode で開かれる日誌ファイルに限る
+- 日誌ヘッダーの `#+STARTUP:` の誤字 nolineimages を noinlineimages に直す
+
 ## 2026-11-13
 - org-journal の carryover を無効化し、未完了の TODO を翌日へ移さず書いた日付の下に残す
 - TODO 一覧の左の列に、日誌のエントリーではファイル名の代わりに日付の見出しを出す

@@ -145,38 +145,39 @@
   ;; 未完了の TODO を翌日へ移す carryover を無効にし、エントリーを書いた日付の下に残す。
   ;; 未完了の一覧は org-agenda の TODO 一覧で見る。doom (+journal) が設定する値を上書きする。
   (setq org-journal-carryover-items "")
-  (setq org-journal-file-header "#+STARTUP: indent\n#+STARTUP: showall\n#+STARTUP: nolineimages\n#+STARTUP: hidestars"))
+  (setq org-journal-file-header "#+STARTUP: indent\n#+STARTUP: showall\n#+STARTUP: noinlineimages\n#+STARTUP: hidestars"))
 
 ;; タグ検索・agenda・TODO 一覧の対象を notes 配下の org 全体にする。doom 既定の
 ;; (list org-directory) はサブディレクトリを辿らないため、明示的に列挙する。
 ;; notes ルートと全サブディレクトリを列挙（各ディレクトリは agenda 構築時に *.org 再走査）。
+;; .git など「.」で始まる隠しディレクトリは、登録もその配下の走査もしない。
+;; 起動のたびに走査しないよう org のロード時まで遅らせる（doom が org-load-hook で入れる
+;; 既定値より後に適用される）。
 ;; notes が無い環境では directory-files-recursively がエラーになるためガードして no-op にする。
-(when (file-directory-p my-dev-notes-dir)
-  (setq org-agenda-files
-        (cons (directory-file-name my-dev-notes-dir)
-              (seq-filter #'file-directory-p
-                          (directory-files-recursively my-dev-notes-dir "" t)))))
+(after! org
+  (when (file-directory-p my-dev-notes-dir)
+    (setq org-agenda-files
+          (cons (directory-file-name my-dev-notes-dir)
+                (seq-filter #'file-directory-p
+                            (directory-files-recursively
+                             my-dev-notes-dir "\\`[^.]" t
+                             (lambda (dir)
+                               (not (string-prefix-p "." (file-name-nondirectory dir))))))))))
 
 ;; TODO 一覧（SPC n t）の左の列は既定ではカテゴリー（日誌ではファイル名）を出す。日誌の
 ;; エントリーでは代わりに、書いた日付の見出し（例: 11/09 (Mon)）を出す。
+;; 日誌ファイルは doom (+journal) が org-journal-mode で開くので、モードで判定する。
 (defun +org-agenda-category-or-journal-date ()
   "日誌のエントリーなら属する日付の見出しを、それ以外ならカテゴリーを「:」付きで返す。"
-  (concat (or (and buffer-file-name
-                   (bound-and-true-p org-journal-dir)
-                   (file-in-directory-p buffer-file-name
-                                        (expand-file-name org-journal-dir org-directory))
+  (concat (or (and (derived-mode-p 'org-journal-mode)
                    (car (org-get-outline-path)))
               (org-get-category))
           ":"))
 
 (after! org-agenda
-  ;; todo 以外は org の既定値のまま。
-  (setq org-agenda-prefix-format
-        '((agenda . " %i %-12:c%?-12t% s")
-          ;; 日付の見出し＋「:」で 12 文字になるため、隙間を空けるよう 13 桁にする。
-          (todo   . " %i %-13(+org-agenda-category-or-journal-date)")
-          (tags   . " %i %-12:c")
-          (search . " %i %-12:c"))))
+  ;; 日付の見出し＋「:」で 12 文字になるため、隙間を空けるよう 13 桁にする。
+  (setf (alist-get 'todo org-agenda-prefix-format)
+        " %i %-13(+org-agenda-category-or-journal-date)"))
 
 ;; org-capture で ToDo を notes/Reminder.org に書き留める（doom 既定のテンプレートを差し替える）。
 (after! org-capture
